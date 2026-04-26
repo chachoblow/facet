@@ -8,7 +8,7 @@ A pickup point for the next working session. Read this first, then dive into the
 - **V1 target**: Facet for VS Code, a Hybrid live-preview Surface for `.md` files, built on CodeMirror 6.
 - **Long-term vision**: Three Surfaces (Facet for VS Code, Facet Review, Facet Studio) sharing a Remark-based markdown core, with the git repo as the Content source of truth.
 - **Repo**: <https://github.com/chachoblow/facet> — public, `main` branch.
-- **Status**: Monorepo scaffolded (pnpm workspaces + TypeScript project references + esbuild, Node 24 / pnpm 10 pinned). Spikes 1–3 run; all green-lit Plan A. Spike 1 promoted to a permanent test at `packages/core/test/round-trip.test.ts`. **Impl order steps 1–2 are done**: the VS Code extension hosts a `CustomTextEditorProvider` with a CodeMirror 6 webview; edits flow webview → `postMessage` → `WorkspaceEdit` → `TextDocument`, and saves write the buffer's bytes verbatim — the v1 structural mechanism for D5. `priority` is `"option"` so VS Code's default markdown editor stays primary until impl order step 12. `@facet/core` now exposes `parse(markdown): Root` (`packages/core/src/parse.ts`) backed by `unified + remark-parse + remark-gfm` — parse-only, no `remark-stringify` in the runtime path.
+- **Status**: Monorepo scaffolded (pnpm workspaces + TypeScript project references + esbuild, Node 24 / pnpm 10 pinned). Spikes 1–3 run; all green-lit Plan A. Spike 1 promoted to a permanent test at `packages/core/test/round-trip.test.ts`. **Impl order steps 1–3 are done**: the VS Code extension hosts a `CustomTextEditorProvider` with a CodeMirror 6 webview; edits flow webview → `postMessage` → `WorkspaceEdit` → `TextDocument`, and saves write the buffer's bytes verbatim — the v1 structural mechanism for D5. `priority` is `"option"` so VS Code's default markdown editor stays primary until impl order step 12. `@facet/core` exposes `parse(markdown): Root` and `findInlineMarks(root): InlineMark[]`. The webview drives a Hybrid live-preview StateField off those: syntax characters of `strong`, `emphasis`, and `link` are hidden when the cursor is outside the mark's outer range and revealed when it enters; the inner content is always mark-decorated with `.facet-strong` / `.facet-emphasis` / `.facet-link` classes.
 
 ## Run it locally
 
@@ -37,17 +37,17 @@ facet/
 
 Spike conclusions are in each `spikes/*/README.md` if you need them.
 
-## Immediate next action: impl order step 3
+## Immediate next action: impl order step 4
 
-Hybrid live-preview for **inline marks** — bold, italic, links — in the CodeMirror 6 webview at `apps/vscode/src/webview/`. The shape: when the cursor is outside the mark, render it formatted (no syntax characters visible); when the cursor enters the mark's range, reveal the syntax for editing. CodeMirror decorations + an editor extension that observes selection.
+Hybrid live-preview for **blocks** — headings, lists, blockquotes, code — in the CodeMirror 6 webview. The shape carries over from step 3: when the cursor is outside the block, render it formatted (heading sizes, list bullets, blockquote indent, code monospace + background); when the cursor enters the block's line range, reveal the source. Blocks differ from inline marks in two ways: (1) the "syntax" is line-leading (`#`, `>`, `-`, fence lines) rather than wrapping the content, and (2) hiding usually means a `Decoration.line` class plus replacing the line-leading marker, not wrapping a span.
 
-The AST source is `parse()` from `@facet/core` (`packages/core/src/parse.ts`). The webview should call it on document changes and walk the mdast for `strong`, `emphasis`, and `link` nodes — using their `position` data to drive decorations. Don't reinvent walking logic in the webview; if you find yourself wanting helpers like `findInlineMarks`, add them to `@facet/core` so future Surfaces (Facet Review, Facet Studio) can reuse them.
+The AST source is again `parse()` from `@facet/core`. Step 3 added `findInlineMarks(root)` returning `{ start, end, innerStart, innerEnd, ... }`; the analog for blocks is something like `findBlocks(root)` returning per-block ranges plus type-specific metadata (heading depth, list ordered/unordered, code lang). Add it to `@facet/core` — keep walking logic out of the webview.
 
-Out of scope this step: blocks (headings, lists, blockquotes, code) — that's step 4. Tables and task lists are step 5.
+Out of scope this step: tables and task lists (step 5), code-block syntax highlighting (step 7), frontmatter (step 6).
 
-Guardrails worth re-reading first: D5 (round-trip — never serialize on save; the structural mechanism is already in place) and D6 (CommonMark + GFM only).
+Guardrails worth re-reading first: D5 (round-trip — the structural mechanism is already in place; don't add a save-path serializer) and D6 (CommonMark + GFM only).
 
-AST-query primitives like `findHeadings`/`findLinks` were intentionally **not** added in step 2 — no consumer needed them yet. Step 3 will be the first real consumer; add them then if helpful.
+The webview decoration pattern lives at `apps/vscode/src/webview/inline-marks.ts` — a `StateField<DecorationSet>` that re-runs `parse()` + `findInlineMarks()` on each doc/selection change. Step 4 will likely add a sibling `block-marks.ts` (or fold both into a shared `marks.ts`) following the same pattern.
 
 ## Implementation order
 
@@ -55,11 +55,11 @@ Done:
 
 1. ✅ CodeMirror 6 inside the `CustomTextEditorProvider`, writing the buffer verbatim on save (the production embodiment of D5). esbuild builds two bundles (extension/Node CJS, webview/browser IIFE); tsconfigs are split so the webview gets DOM lib. `priority="option"` keeps VS Code's default markdown editor primary until step 12. F5 dev loop wired in `apps/vscode/.vscode/` with `fixtures/sample.md`.
 2. ✅ Remark integration for AST awareness — `@facet/core` exposes `parse(markdown): Root` via `unified + remark-parse + remark-gfm`. Parse-only; `remark-stringify` stays a `devDependency` for the round-trip test. Coverage: ATX headings, ordered/unordered lists, inline links with title, fenced code with language, GFM tables with alignment, GFM task list checked state, GFM strikethrough.
+3. ✅ Hybrid live-preview for inline marks (bold, italic, links). `@facet/core` adds `findInlineMarks(root): InlineMark[]` returning outer/inner offsets per `strong`/`emphasis`/`link` (plus `url`/`title` for links). The webview's `inline-marks.ts` `StateField<DecorationSet>` re-parses on each doc/selection change, hides the syntax characters with `Decoration.replace` when the cursor is outside the mark's outer range, and styles the inner with `.facet-strong` / `.facet-emphasis` / `.facet-link`. Nested marks (e.g. emphasis inside strong) are handled.
 
 Ahead, in order:
 
-3. **Next:** Hybrid live-preview for inline marks (bold, italic, links).
-4. Hybrid live-preview for blocks (headings, lists, blockquotes, code).
+4. **Next:** Hybrid live-preview for blocks (headings, lists, blockquotes, code).
 5. Tables, task lists.
 6. Frontmatter (collapsed block, click to expand).
 7. Code block syntax highlighting.
