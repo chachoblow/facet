@@ -53,6 +53,16 @@ The decoration pattern lives at `apps/vscode/src/webview/block-marks.ts` and `in
 
 Two follow-ups parked from step 4 (see Pending / parked below): nested blockquotes (`>>`/`>>>`) collapse visually to one quote level, and code fences are visible-but-muted rather than hidden. Both safe to defer.
 
+### Warm-up before step 5: lock in step-4 test gaps
+
+These weren't covered in the step-4 test pass and should land before step 5 starts (they're a 30-minute warm-up, not a blocker):
+
+- `findBlocks` on a **setext heading** (`Heading\n=======\n`) — its marker range is empty; downstream code already guards with `markerStart < markerEnd`, but a test pins the contract.
+- `findBlocks` on a **task list item** (`- [ ] foo`) — currently returned as a plain `listItem` (no `checked` field yet). Locking the current shape makes step 5's `checked` extension obviously additive rather than a behavior change.
+- `findBlocks` on a **tilde-fenced code block** (`~~~js\n...\n~~~`) — the webview's fence-detection regex includes `~~~` but `findBlocks` has never been tested against one.
+- `findBlocks` on an **indented code block** (4-space indent, no fences) — should also be returned as `code`. The webview's fence regex won't match (so the lines style as plain `.facet-code-line`, no fence muting); confirm the AST behavior.
+- A **`block-marks` cursor-in-block unit test**: export `buildDecorations` from `block-marks.ts` and call it with `EditorState.create({ doc: "..." }).doc` and explicit selection offsets. Three assertions catch the off-by-one regression we already hit once: (1) cursor on a heading line keeps `# ` visible, (2) cursor at the heading line's end-of-line offset still reveals it, (3) cursor on the next line hides it.
+
 ## Implementation order
 
 Done:
