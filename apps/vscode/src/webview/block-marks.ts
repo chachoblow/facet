@@ -1,6 +1,7 @@
 import { findBlocks, parse } from "@facet/core";
 import { type Range, RangeSet, StateField, type Text } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, WidgetType } from "@codemirror/view";
+import { buildToggleEdit } from "./task-toggle.js";
 
 const hideDeco = Decoration.replace({});
 
@@ -16,6 +17,38 @@ class BulletWidget extends WidgetType {
   }
 }
 const bulletDeco = Decoration.replace({ widget: new BulletWidget() });
+
+class CheckboxWidget extends WidgetType {
+  constructor(
+    private readonly checked: boolean,
+    private readonly checkboxStart: number,
+    private readonly checkboxEnd: number,
+  ) {
+    super();
+  }
+  override toDOM(view: EditorView): HTMLElement {
+    const el = document.createElement("input");
+    el.type = "checkbox";
+    el.checked = this.checked;
+    el.className = "facet-task-checkbox";
+    el.addEventListener("click", () => {
+      const edit = buildToggleEdit({
+        checked: this.checked,
+        checkboxStart: this.checkboxStart,
+        checkboxEnd: this.checkboxEnd,
+      });
+      view.dispatch({ changes: { from: edit.from, to: edit.to, insert: edit.insert } });
+    });
+    return el;
+  }
+  override eq(other: CheckboxWidget): boolean {
+    return (
+      this.checked === other.checked &&
+      this.checkboxStart === other.checkboxStart &&
+      this.checkboxEnd === other.checkboxEnd
+    );
+  }
+}
 
 const headingLineDecos = [1, 2, 3, 4, 5, 6].map((d) =>
   Decoration.line({ class: `facet-heading-line-${d}` }),
@@ -61,8 +94,20 @@ export function buildDecorations(doc: Text, selFrom: number, selTo: number): Dec
       for (let n = startLine.number; n <= endLine.number; n++) {
         ranges.push(listLineDeco.range(doc.line(n).from));
       }
-      if (!block.ordered && block.markerStart < block.markerEnd && !cursorInBlock) {
-        ranges.push(bulletDeco.range(block.markerStart, block.markerEnd));
+      if (!cursorInBlock) {
+        if (block.checked !== null && block.checkboxStart !== null && block.checkboxEnd !== null) {
+          // For unordered tasks, swallow the hidden `- ` into the same atomic
+          // range as the widget — otherwise the cursor can land at the boundary
+          // between the hide and the widget when arrowing up/down.
+          const replaceFrom = block.ordered ? block.checkboxStart : block.markerStart;
+          ranges.push(
+            Decoration.replace({
+              widget: new CheckboxWidget(block.checked, block.checkboxStart, block.checkboxEnd),
+            }).range(replaceFrom, block.checkboxEnd),
+          );
+        } else if (!block.ordered && block.markerStart < block.markerEnd) {
+          ranges.push(bulletDeco.range(block.markerStart, block.markerEnd));
+        }
       }
     } else if (block.type === "code") {
       for (let n = startLine.number; n <= endLine.number; n++) {

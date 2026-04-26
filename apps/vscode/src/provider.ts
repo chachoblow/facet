@@ -100,6 +100,12 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
 
     .facet-bullet { color: var(--vscode-textLink-foreground); }
 
+    .facet-task-checkbox {
+      vertical-align: middle;
+      margin: 0 0.4em 0 0;
+      cursor: pointer;
+    }
+
     .facet-code-line, .facet-code-fence-line {
       font-family: var(--vscode-editor-font-family, monospace);
       background: var(--vscode-textCodeBlock-background, rgba(127, 127, 127, 0.08));

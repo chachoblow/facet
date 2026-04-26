@@ -40,3 +40,40 @@ describe("block-marks buildDecorations", () => {
     expect(hasMarkerHide(buildDecorations(doc, cursor, cursor))).toBe(true);
   });
 });
+
+// Doc: "- [ ] foo\n\nnext\n"
+//   line 1: "- [ ] foo"  positions 0-8, line break at 9
+//   line 2: ""           position 10 (blank — separates the list from the next block)
+//   line 3: "next"       positions 11-14
+// The checkbox "[ ]" spans positions 2..5.
+const taskDoc = Text.of(["- [ ] foo", "", "next", ""]);
+
+function hasCheckboxWidget(
+  decorations: ReturnType<typeof buildDecorations>,
+  from: number,
+  to: number,
+): boolean {
+  let found = false;
+  decorations.between(from, to, (a, b, value) => {
+    if (a === from && b === to && value.spec.widget?.constructor.name === "CheckboxWidget") {
+      found = true;
+      return false;
+    }
+    return undefined;
+  });
+  return found;
+}
+
+describe("block-marks task list checkbox widget", () => {
+  it("replaces `- [ ]` with a single checkbox widget when the cursor is on another line", () => {
+    // Covers `markerStart..checkboxEnd` (offsets 0..5) as one atomic range so
+    // up/down arrows can't land the cursor in the hidden gap between `- ` and `[ ]`.
+    const cursor = 11; // start of "next"
+    expect(hasCheckboxWidget(buildDecorations(taskDoc, cursor, cursor), 0, 5)).toBe(true);
+  });
+
+  it("reveals the `- [ ]` source when the cursor is on the task item's line", () => {
+    const cursor = 7; // inside "foo" on line 1
+    expect(hasCheckboxWidget(buildDecorations(taskDoc, cursor, cursor), 0, 5)).toBe(false);
+  });
+});

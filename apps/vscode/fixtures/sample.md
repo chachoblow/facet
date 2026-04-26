@@ -18,6 +18,10 @@ A scratch fixture for the F5 dev loop. Edit, save, and confirm the bytes round-t
    - **Bold *and italic***
 3. Third item with [a link](https://example.com)
 
+- [ ] Click this checkbox — saving should produce a `[ ]` → `[x]` diff and nothing else.
+- [x] Already-done item — clicking should flip it back to `[ ]`.
+- Plain item next to task items.
+
 > Blockquote with `inline code`.
 
 ```ts
