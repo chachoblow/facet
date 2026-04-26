@@ -57,4 +57,12 @@ describe("parse", () => {
     const para = root.children[0] as Paragraph;
     expect(para.children[0]).toMatchObject({ type: "delete" });
   });
+
+  it("parses YAML frontmatter as a yaml node at the top of the AST", () => {
+    const root = parse("---\nfoo: bar\n---\n# Heading\n");
+    expect(root.children[0]).toMatchObject({
+      type: "yaml",
+      value: "foo: bar",
+    });
+  });
 });
