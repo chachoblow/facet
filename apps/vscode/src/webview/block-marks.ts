@@ -25,7 +25,7 @@ const listLineDeco = Decoration.line({ class: "facet-list-line" });
 const codeLineDeco = Decoration.line({ class: "facet-code-line" });
 const codeFenceLineDeco = Decoration.line({ class: "facet-code-fence-line" });
 
-function buildDecorations(doc: Text, selFrom: number, selTo: number): DecorationSet {
+export function buildDecorations(doc: Text, selFrom: number, selTo: number): DecorationSet {
   const root = parse(doc.toString());
   const blocks = findBlocks(root);
   const ranges: Range<Decoration>[] = [];
