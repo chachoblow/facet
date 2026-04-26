@@ -157,6 +157,34 @@ A record of meaningful design decisions made during initial scoping, the alterna
 
 ---
 
+## D8. Rendering model for complex blocks (line-based reveal vs. overlay layer)
+
+**Decision (provisional, for v1):** Render complex blocks (frontmatter, tables, code blocks, blockquotes, headings, lists) using **line-based reveal-on-cursor** — when the cursor is on any line of the block, the raw source is revealed for editing; when it's elsewhere, marker characters are hidden via `Decoration.replace` and styling is applied via per-line `Decoration.line`. The block stays *inline* in the source.
+
+**Alternative considered: Block-overlay "layer" (Obsidian-style).** The block renders as a styled overlay layer **above** the source. Clicking the layer drops into raw-source edit mode; clicking out re-applies the layer. Arrow keys treat each layer as a single atomic unit. This is the model Obsidian uses for frontmatter and embedded blocks, and it's the long-term direction the Author finds compelling.
+
+**Why line-based reveal won for v1:**
+
+- Aligned with CodeMirror 6's native model (per-decoration StateFields over the live text buffer). Each block type ships independently — frontmatter, tables, code, etc. each get their own PR-sized unit, no cross-cutting overlay abstraction needed up front.
+- Round-trip fidelity (D5) is structurally trivial: the source is always the rendered representation; saves write the buffer verbatim. An overlay model still saves the buffer, but the cursor/focus model is more elaborate, raising the surface area for accidental buffer mutations.
+- Plan B (D3, Milkdown with a source-mode toggle) would naturally provide overlay-style rendering if we pivot. Over-investing in a CM-native overlay system before D3's revisit conditions trigger would duplicate work.
+
+**Why the overlay model is genuinely tempting (and tracked here, not rejected):**
+
+- Complex blocks (Mermaid in step 10, eventually a properties panel for frontmatter, eventually a table grid) are fundamentally render-not-edit experiences. An overlay layer is the natural fit; trying to retrofit them onto line-based reveal is fighting the model.
+- Cursor edge cases compound across block types under the line-based model. Two are parked already (arrow-up/down goal-column drift across decorated lines, and the same drift exaggerated through the multi-line frontmatter widget — currently papered over with `EditorView.atomicRanges`). Each new block type adds a similar edge case.
+
+**When to revisit:**
+
+- **Before step 10 (Mermaid).** Mermaid is render-not-edit by nature; if we build it as a third bespoke decoration variant, we're committing to the line-based model. Make this decision explicitly there.
+- **After step 7 (code blocks)** if syntax highlighting + visible-but-muted fences + a `lang` badge starts to feel like overlay-in-disguise. If we're already 80% of the way to a layer for code, generalize.
+- **During step 13 (polish)** if the parked cursor edge cases (most acute on frontmatter) feel actively bad rather than tolerable in the "live on the team wiki for a week" acceptance test.
+- **If D3's Plan B activates** (switch to Milkdown), this decision is moot — Milkdown gives overlay rendering for free.
+
+**Out of scope here:** D8 governs the rendering model only. Whether frontmatter eventually gets a properties-panel UI, whether tables get a grid editor, whether Mermaid gets PNG export — those are separate scope decisions, listed under "Open questions" below.
+
+---
+
 ## Open questions (deferred, not decided)
 
 These have been discussed but explicitly not decided. Captured here so they aren't lost when web Surfaces get scoped:
