@@ -15,6 +15,7 @@ A scratch fixture for the F5 dev loop. Edit, save, and confirm the bytes round-t
 2. Second item
    - Nested
    - **Bold** and *italic*
+   - **Bold *and italic***
 3. Third item with [a link](https://example.com)
 
 > Blockquote with `inline code`.

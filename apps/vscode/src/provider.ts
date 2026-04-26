@@ -78,6 +78,9 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
     #editor, .cm-editor { height: 100%; }
     .cm-editor.cm-focused { outline: none; }
     .cm-scroller { font-family: inherit; font-size: inherit; }
+    .facet-strong { font-weight: bold; }
+    .facet-emphasis { font-style: italic; }
+    .facet-link { color: var(--vscode-textLink-foreground); text-decoration: underline; }
   </style>
 </head>
 <body>

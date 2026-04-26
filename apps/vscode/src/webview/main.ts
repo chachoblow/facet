@@ -1,5 +1,6 @@
 import { Annotation, EditorState } from "@codemirror/state";
 import { EditorView, basicSetup } from "codemirror";
+import { inlineMarksField } from "./inline-marks.js";
 
 declare function acquireVsCodeApi(): {
   postMessage(msg: unknown): void;
@@ -16,6 +17,7 @@ function createView(initialDoc: string, parent: HTMLElement): EditorView {
     doc: initialDoc,
     extensions: [
       basicSetup,
+      inlineMarksField,
       EditorView.updateListener.of((update) => {
         if (!update.docChanged) return;
         if (update.transactions.some((t) => t.annotation(remote))) return;
