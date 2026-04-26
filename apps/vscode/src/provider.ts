@@ -129,6 +129,21 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
     .facet-table-cell-left   { display: inline-block; text-align: left; }
     .facet-table-cell-center { display: inline-block; text-align: center; }
     .facet-table-cell-right  { display: inline-block; text-align: right; }
+
+    .facet-frontmatter-widget {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--vscode-editorWidget-background, rgba(127, 127, 127, 0.08));
+      border: 1px solid var(--vscode-editorWidget-border, rgba(127, 127, 127, 0.3));
+      color: var(--vscode-descriptionForeground, inherit);
+      font-size: 0.85em;
+      cursor: pointer;
+      user-select: none;
+    }
+    .facet-frontmatter-widget:hover {
+      background: var(--vscode-list-hoverBackground, rgba(127, 127, 127, 0.16));
+    }
   </style>
 </head>
 <body>

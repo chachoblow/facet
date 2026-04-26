@@ -1,3 +1,9 @@
+---
+title: Sample document
+tags: [facet, fixture]
+author: wesley
+---
+
 # Facet — sample document
 
 A scratch fixture for the F5 dev loop. Edit, save, and confirm the bytes round-trip.

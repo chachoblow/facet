@@ -1,6 +1,7 @@
 import { Annotation, EditorState } from "@codemirror/state";
 import { EditorView, basicSetup } from "codemirror";
 import { blockMarksField } from "./block-marks.js";
+import { frontmatterMarksField } from "./frontmatter-marks.js";
 import { inlineMarksField } from "./inline-marks.js";
 import { tableMarksField } from "./table-marks.js";
 
@@ -19,6 +20,7 @@ function createView(initialDoc: string, parent: HTMLElement): EditorView {
     doc: initialDoc,
     extensions: [
       basicSetup,
+      frontmatterMarksField,
       blockMarksField,
       tableMarksField,
       inlineMarksField,
