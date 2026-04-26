@@ -96,6 +96,20 @@ describe("findBlocks", () => {
     expect(code).toEqual({ type: "code", lang: "js", start: 0, end: 25 });
   });
 
+  it("finds a tilde-fenced code block with language", () => {
+    const md = "~~~js\nconsole.log(1);\n~~~\n";
+    const code = findBlocks(parse(md)).find((b) => b.type === "code");
+    expect(code).toEqual({ type: "code", lang: "js", start: 0, end: 25 });
+  });
+
+  it("finds an indented (4-space) code block", () => {
+    // Four-space-indented lines are CommonMark code blocks with no fence,
+    // so the webview's fence regex won't match — they style as plain code lines.
+    const md = "    plain code\n    more code\n";
+    const code = findBlocks(parse(md)).find((b) => b.type === "code");
+    expect(code).toMatchObject({ type: "code", lang: null, start: 0 });
+  });
+
   it("represents a fenced code block with no language as lang: null", () => {
     const md = "```\nplain\n```\n";
     const code = findBlocks(parse(md)).find((b) => b.type === "code");
@@ -121,5 +135,32 @@ describe("findBlocks", () => {
     );
     expect(blockquotes).toHaveLength(1);
     expect(blockquotes[0]?.start).toBe(0);
+  });
+
+  it("returns a GFM task list item as a plain listItem (no checked field yet)", () => {
+    // Locks the pre-step-5 shape: the `[ ]` is included in the marker range,
+    // and no `checked` field is exposed. Step 5 will extend this additively.
+    // 0123456789
+    // - [ ] foo\n
+    const item = findBlocks(parse("- [ ] foo\n")).find((b) => b.type === "listItem");
+    expect(item).toEqual({
+      type: "listItem",
+      ordered: false,
+      start: 0,
+      end: 9,
+      markerStart: 0,
+      markerEnd: 6,
+    });
+  });
+
+  it("emits an empty marker range for a setext heading", () => {
+    // Heading
+    // =======
+    const heading = findBlocks(parse("Heading\n=======\n")).find((b) => b.type === "heading");
+    expect(heading).toBeDefined();
+    expect(heading).toMatchObject({ type: "heading", depth: 1 });
+    if (heading?.type === "heading") {
+      expect(heading.markerStart).toBe(heading.markerEnd);
+    }
   });
 });
