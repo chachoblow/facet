@@ -1,5 +1,6 @@
 import { Annotation, EditorState } from "@codemirror/state";
 import { EditorView, basicSetup } from "codemirror";
+import { blockMarksField } from "./block-marks.js";
 import { inlineMarksField } from "./inline-marks.js";
 
 declare function acquireVsCodeApi(): {
@@ -17,6 +18,7 @@ function createView(initialDoc: string, parent: HTMLElement): EditorView {
     doc: initialDoc,
     extensions: [
       basicSetup,
+      blockMarksField,
       inlineMarksField,
       EditorView.updateListener.of((update) => {
         if (!update.docChanged) return;

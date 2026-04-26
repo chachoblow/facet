@@ -81,6 +81,30 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
     .facet-strong { font-weight: bold; }
     .facet-emphasis { font-style: italic; }
     .facet-link { color: var(--vscode-textLink-foreground); text-decoration: underline; }
+
+    .facet-heading-line-1 { font-size: 1.6em; font-weight: 700; line-height: 1.2; }
+    .facet-heading-line-2 { font-size: 1.4em; font-weight: 700; line-height: 1.2; }
+    .facet-heading-line-3 { font-size: 1.2em; font-weight: 700; line-height: 1.2; }
+    .facet-heading-line-4 { font-size: 1.1em; font-weight: 600; line-height: 1.2; }
+    .facet-heading-line-5 { font-size: 1em;   font-weight: 600; line-height: 1.2; }
+    .facet-heading-line-6 { font-size: 1em;   font-weight: 600; line-height: 1.2; opacity: 0.8; }
+
+    .facet-blockquote-line {
+      border-left: 3px solid var(--vscode-textBlockQuote-border, var(--vscode-textLink-foreground));
+      background: var(--vscode-textBlockQuote-background, transparent);
+      padding-left: 0.6em;
+      color: var(--vscode-descriptionForeground, inherit);
+    }
+
+    .facet-list-line {}
+
+    .facet-bullet { color: var(--vscode-textLink-foreground); }
+
+    .facet-code-line, .facet-code-fence-line {
+      font-family: var(--vscode-editor-font-family, monospace);
+      background: var(--vscode-textCodeBlock-background, rgba(127, 127, 127, 0.08));
+    }
+    .facet-code-fence-line { opacity: 0.55; }
   </style>
 </head>
 <body>
