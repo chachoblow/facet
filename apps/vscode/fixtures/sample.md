@@ -29,9 +29,14 @@ const greeting: string = "hello, facet";
 console.log(greeting);
 ```
 
-| Col A | Col B |
-| ----- | ----- |
-| 1     | one   |
-| 2     | two   |
+| Col A | Col B | Col C |
+| ----- | ----- | ------ |
+| 1     | one   | 2|
+| 2     | two   | # | 
+
+| Left | Center | Right |
+| :--- | :----: | ----: |
+| a    |   b    |     c |
+| dd   |   ee   |    ff |
 
 This is an edit. 
