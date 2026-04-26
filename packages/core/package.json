@@ -21,14 +21,17 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
+  "dependencies": {
+    "@types/mdast": "^4.0.4",
+    "remark-gfm": "^4.0.0",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.5"
+  },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "remark-frontmatter": "^5.0.0",
-    "remark-gfm": "^4.0.0",
-    "remark-parse": "^11.0.0",
     "remark-stringify": "^11.0.0",
     "typescript": "^5.6.0",
-    "unified": "^11.0.5",
     "vitest": "^2.0.0"
   }
 }
