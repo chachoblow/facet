@@ -20,7 +20,9 @@ Facet treats markdown files as the canonical artifacts that collaborators (devs,
 - [`docs/facet-spec-v1.md`](docs/facet-spec-v1.md) — v1 technical spec for Facet for VS Code
 - [`docs/facet-decisions.md`](docs/facet-decisions.md) — decision log: alternatives considered and revisit conditions
 - [`docs/UBIQUITOUS_LANGUAGE.md`](docs/UBIQUITOUS_LANGUAGE.md) — canonical glossary; use these terms in code and docs
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — setup and command reference
+- [`HANDOFF.md`](HANDOFF.md) — current state and immediate next steps
 
 ## Status
 
-Working name. Pre-implementation. See `docs/facet-spec-v1.md` for v1 scope.
+Working name. Monorepo scaffolded; v1 implementation in progress. See `HANDOFF.md` for the immediate next step and `docs/facet-spec-v1.md` for v1 scope.
