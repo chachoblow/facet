@@ -5,4 +5,6 @@ export { findBlocks } from "./find-blocks.js";
 export type { Block } from "./find-blocks.js";
 export { findTables } from "./find-tables.js";
 export type { Table, TableRow, TableCell, ColumnAlign } from "./find-tables.js";
+export { findFrontmatter } from "./find-frontmatter.js";
+export type { Frontmatter } from "./find-frontmatter.js";
 export type { Root } from "mdast";
