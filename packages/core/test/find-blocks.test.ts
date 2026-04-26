@@ -31,10 +31,13 @@ describe("findBlocks", () => {
       {
         type: "listItem",
         ordered: false,
+        checked: null,
         start: 0,
         end: 5,
         markerStart: 0,
         markerEnd: 2,
+        checkboxStart: null,
+        checkboxEnd: null,
       },
     ]);
   });
@@ -46,10 +49,13 @@ describe("findBlocks", () => {
       {
         type: "listItem",
         ordered: true,
+        checked: null,
         start: 0,
         end: 8,
         markerStart: 0,
         markerEnd: 3,
+        checkboxStart: null,
+        checkboxEnd: null,
       },
     ]);
   });
@@ -127,6 +133,50 @@ describe("findBlocks", () => {
     expect(blocks).toEqual([]);
   });
 
+  it("returns checked:false and a checkbox range for `- [ ] foo`", () => {
+    // 0123456789
+    // - [ ] foo\n
+    //   ^^^        checkboxStart=2, checkboxEnd=5
+    const item = findBlocks(parse("- [ ] foo\n")).find((b) => b.type === "listItem");
+    expect(item).toEqual({
+      type: "listItem",
+      ordered: false,
+      checked: false,
+      start: 0,
+      end: 9,
+      markerStart: 0,
+      markerEnd: 6,
+      checkboxStart: 2,
+      checkboxEnd: 5,
+    });
+  });
+
+  it("returns checked:true for `- [x] done`", () => {
+    // 0123456789
+    // - [x] done\n
+    const item = findBlocks(parse("- [x] done\n")).find((b) => b.type === "listItem");
+    expect(item).toMatchObject({
+      type: "listItem",
+      ordered: false,
+      checked: true,
+      checkboxStart: 2,
+      checkboxEnd: 5,
+    });
+  });
+
+  it("returns checked + checkbox range on an ordered task list", () => {
+    // 0123456789
+    // 1. [ ] x\n     checkbox at [3..6)
+    const item = findBlocks(parse("1. [ ] x\n")).find((b) => b.type === "listItem");
+    expect(item).toMatchObject({
+      type: "listItem",
+      ordered: true,
+      checked: false,
+      checkboxStart: 3,
+      checkboxEnd: 6,
+    });
+  });
+
   it("emits only the outer blockquote when blockquotes are nested", () => {
     // > outer
     // > > nested
@@ -135,22 +185,6 @@ describe("findBlocks", () => {
     );
     expect(blockquotes).toHaveLength(1);
     expect(blockquotes[0]?.start).toBe(0);
-  });
-
-  it("returns a GFM task list item as a plain listItem (no checked field yet)", () => {
-    // Locks the pre-step-5 shape: the `[ ]` is included in the marker range,
-    // and no `checked` field is exposed. Step 5 will extend this additively.
-    // 0123456789
-    // - [ ] foo\n
-    const item = findBlocks(parse("- [ ] foo\n")).find((b) => b.type === "listItem");
-    expect(item).toEqual({
-      type: "listItem",
-      ordered: false,
-      start: 0,
-      end: 9,
-      markerStart: 0,
-      markerEnd: 6,
-    });
   });
 
   it("emits an empty marker range for a setext heading", () => {

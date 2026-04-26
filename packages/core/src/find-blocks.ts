@@ -13,10 +13,13 @@ export type Block =
   | {
       type: "listItem";
       ordered: boolean;
+      checked: boolean | null;
       start: number;
       end: number;
       markerStart: number;
       markerEnd: number;
+      checkboxStart: number | null;
+      checkboxEnd: number | null;
     }
   | { type: "code"; lang: string | null; start: number; end: number };
 
@@ -97,12 +100,18 @@ function toListItem(node: ListItem, ordered: boolean): Block | null {
   if (start === undefined || end === undefined) return null;
 
   const firstChildStart = node.children[0]?.position?.start.offset ?? start;
+  const checked = node.checked ?? null;
+  const checkboxEnd = checked === null ? null : firstChildStart - 1;
+  const checkboxStart = checked === null ? null : firstChildStart - 4;
   return {
     type: "listItem",
     ordered,
+    checked,
     start,
     end,
     markerStart: start,
     markerEnd: firstChildStart,
+    checkboxStart,
+    checkboxEnd,
   };
 }
