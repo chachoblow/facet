@@ -1,0 +1,125 @@
+import { describe, expect, it } from "vitest";
+import { findBlocks } from "../src/find-blocks.js";
+import { parse } from "../src/parse.js";
+
+describe("findBlocks", () => {
+  it("returns nothing for a doc with no block-level structure", () => {
+    expect(findBlocks(parse("plain paragraph text\n"))).toEqual([]);
+  });
+
+  it("finds an ATX heading with marker range covering '# '", () => {
+    // 0123456789
+    // # Hello\n
+    const blocks = findBlocks(parse("# Hello\n"));
+    expect(blocks).toEqual([
+      { type: "heading", depth: 1, start: 0, end: 7, markerStart: 0, markerEnd: 2 },
+    ]);
+  });
+
+  it("captures heading depth for ## through ######", () => {
+    const md = "## Two\n\n### Three\n\n#### Four\n\n##### Five\n\n###### Six\n";
+    const depths = findBlocks(parse(md))
+      .filter((b) => b.type === "heading")
+      .map((b) => (b.type === "heading" ? b.depth : null));
+    expect(depths).toEqual([2, 3, 4, 5, 6]);
+  });
+
+  it("finds an unordered list item with marker range covering '- '", () => {
+    // - one\n
+    const blocks = findBlocks(parse("- one\n"));
+    expect(blocks).toEqual([
+      {
+        type: "listItem",
+        ordered: false,
+        start: 0,
+        end: 5,
+        markerStart: 0,
+        markerEnd: 2,
+      },
+    ]);
+  });
+
+  it("finds an ordered list item with marker range covering '1. '", () => {
+    // 1. first\n
+    const blocks = findBlocks(parse("1. first\n"));
+    expect(blocks).toEqual([
+      {
+        type: "listItem",
+        ordered: true,
+        start: 0,
+        end: 8,
+        markerStart: 0,
+        markerEnd: 3,
+      },
+    ]);
+  });
+
+  it("emits each list item separately", () => {
+    const blocks = findBlocks(parse("- one\n- two\n- three\n"));
+    expect(blocks).toHaveLength(3);
+    expect(blocks.every((b) => b.type === "listItem")).toBe(true);
+  });
+
+  it("propagates ordered context to nested list items", () => {
+    // - outer
+    //   1. inner
+    const md = "- outer\n  1. inner\n";
+    const items = findBlocks(parse(md)).filter((b) => b.type === "listItem");
+    expect(items).toHaveLength(2);
+    expect(items[0]).toMatchObject({ ordered: false });
+    expect(items[1]).toMatchObject({ ordered: true });
+  });
+
+  it("finds a blockquote covering all of its lines", () => {
+    // > a
+    // > b
+    const blocks = findBlocks(parse("> a\n> b\n"));
+    const bq = blocks.find((b) => b.type === "blockquote");
+    expect(bq).toBeDefined();
+    expect(bq).toMatchObject({ type: "blockquote", start: 0 });
+    expect(bq!.end).toBe(7);
+  });
+
+  it("finds blocks nested inside a blockquote", () => {
+    // > # heading
+    // > - item
+    const blocks = findBlocks(parse("> # heading\n> - item\n"));
+    const types = blocks.map((b) => b.type);
+    expect(types).toContain("blockquote");
+    expect(types).toContain("heading");
+    expect(types).toContain("listItem");
+  });
+
+  it("finds a fenced code block with language", () => {
+    const md = "```js\nconsole.log(1);\n```\n";
+    const code = findBlocks(parse(md)).find((b) => b.type === "code");
+    expect(code).toEqual({ type: "code", lang: "js", start: 0, end: 25 });
+  });
+
+  it("represents a fenced code block with no language as lang: null", () => {
+    const md = "```\nplain\n```\n";
+    const code = findBlocks(parse(md)).find((b) => b.type === "code");
+    expect(code).toMatchObject({ type: "code", lang: null });
+  });
+
+  it("returns blocks in document order", () => {
+    const md = "# a\n\n- b\n\n> c\n\n```\nd\n```\n";
+    const types = findBlocks(parse(md)).map((b) => b.type);
+    expect(types).toEqual(["heading", "listItem", "blockquote", "code"]);
+  });
+
+  it("does not surface paragraphs or thematic breaks", () => {
+    const blocks = findBlocks(parse("a paragraph\n\n---\n\nanother\n"));
+    expect(blocks).toEqual([]);
+  });
+
+  it("emits only the outer blockquote when blockquotes are nested", () => {
+    // > outer
+    // > > nested
+    const blockquotes = findBlocks(parse("> outer\n> > nested\n")).filter(
+      (b) => b.type === "blockquote",
+    );
+    expect(blockquotes).toHaveLength(1);
+    expect(blockquotes[0]?.start).toBe(0);
+  });
+});
