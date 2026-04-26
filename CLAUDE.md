@@ -6,7 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Monorepo scaffolded — pnpm workspaces, TypeScript project references, esbuild. Node 24 and pnpm 10 are pinned (`.nvmrc`, `engines`, `packageManager`). Spikes 1–3 have run; conclusions live in each `spikes/*/README.md`. Spike 1 is now a permanent test at `packages/core/test/round-trip.test.ts`.
 
-`apps/vscode/` builds and registers a stub `Facet: Hello` command — the real `CustomTextEditorProvider` + webview wiring is impl order step 1 in `HANDOFF.md`. `packages/core/src/index.ts` is intentionally empty; parsing logic lands when impl order step 2 does.
+**Impl order step 1 is done.** `apps/vscode/` registers a `CustomTextEditorProvider` (`facet.markdownEditor`) hosting a CodeMirror 6 webview. Edits flow webview → `postMessage` → `WorkspaceEdit` → `TextDocument`; saves write the buffer's bytes verbatim — the v1 structural mechanism for D5. esbuild builds two bundles (extension/Node CJS, webview/browser IIFE); tsconfigs are split so the webview source gets DOM lib without polluting the extension. `priority` is `"option"`, so VS Code's default markdown editor stays primary until impl order step 12 (the activation command). F5 dev loop is in `apps/vscode/.vscode/`; `apps/vscode/fixtures/sample.md` is the playground (and is `.prettierignore`'d so Prettier doesn't fight verbatim writes).
+
+`packages/core/src/index.ts` is still intentionally empty; parsing lands in **impl order step 2 (next)** — Remark for AST awareness, parse-only.
 
 Common commands (run from repo root):
 
