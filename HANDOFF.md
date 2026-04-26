@@ -8,7 +8,7 @@ A pickup point for the next working session. Read this first, then dive into the
 - **V1 target**: Facet for VS Code, a Hybrid live-preview Surface for `.md` files, built on CodeMirror 6.
 - **Long-term vision**: Three Surfaces (Facet for VS Code, Facet Review, Facet Studio) sharing a Remark-based markdown core, with the git repo as the Content source of truth.
 - **Repo**: <https://github.com/chachoblow/facet> — public, `main` branch, currently contains only docs and a `.gitignore`.
-- **Status**: Pre-implementation. Spikes 1 and 2 run (D5 architecture refined to parser-only; D3 confirmed Plan A — CodeMirror Hybrid live-preview viable). Spike 3 (VS Code custom editor skeleton) is next. No production code yet.
+- **Status**: Pre-implementation. Spikes 1, 2, and 3 run (D5 architecture refined to parser-only; D3 confirmed Plan A — CodeMirror Hybrid live-preview viable; VS Code custom editor plumbing behaves as expected). Ready to scaffold. No production code yet.
 
 ## Read these first (in order)
 
@@ -59,6 +59,10 @@ A pickup point for the next working session. Read this first, then dive into the
 **If it fails or feels disproportionately hard**: Activate Plan B from Decision D3 — switch Facet for VS Code to **Milkdown with a source-mode toggle**. This unifies the editor library across all three Surfaces (Milkdown everywhere) and is a real, supported fallback.
 
 ### Spike 3 — VS Code custom editor + webview skeleton
+
+**Status: Run (this spike directory).** See [`spikes/03-vscode-skeleton/README.md`](spikes/03-vscode-skeleton/README.md).
+
+**Conclusion**: The `CustomTextEditorProvider` plumbing — webview ↔ `WorkspaceEdit` ↔ `TextDocument` message loop, dirty propagation, undo/redo, `asWebviewUri()`, theme inheritance, CSP — all behave like a normal VS Code editor. Find/replace is the expected webview limitation; CodeMirror's own search extension will address it in the v1 build. Original method/criteria retained below for context.
 
 **Goal**: Confirm the VS Code integration plumbing works as expected, before adding any editor library on top.
 
