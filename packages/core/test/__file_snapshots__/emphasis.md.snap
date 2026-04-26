@@ -1,0 +1,19 @@
+# Emphasis
+
+Italic with underscores: *hello* world.
+
+Italic with asterisks: *hello* world.
+
+Bold with underscores: **hello** world.
+
+Bold with asterisks: **hello** world.
+
+Bold-italic underscores: ***hello*** world.
+
+Bold-italic asterisks: ***hello*** world.
+
+Mid-word underscore (should not be emphasis): foo\_bar\_baz.
+
+Mid-word asterisk (is emphasis per CommonMark): foo*bar*baz.
+
+Strikethrough (GFM): ~~deleted~~ kept.

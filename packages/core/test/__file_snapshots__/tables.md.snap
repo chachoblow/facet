@@ -1,0 +1,28 @@
+# Tables (GFM)
+
+Basic:
+
+| Name  | Role     |
+| ----- | -------- |
+| Alice | Author   |
+| Bob   | Reviewer |
+
+Alignment:
+
+| Left | Center | Right |
+| :--- | :----: | ----: |
+| a    |    b   |     c |
+| dd   |   ee   |    ff |
+
+Compact:
+
+| a | b | c |
+| - | - | - |
+| 1 | 2 | 3 |
+
+With escapes and pipes:
+
+| Symbol | Meaning      |
+| ------ | ------------ |
+| `\|`   | pipe literal |
+| `\\`   | backslash    |

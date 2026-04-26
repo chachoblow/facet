@@ -1,0 +1,24 @@
+# Links
+
+Inline link: [Anthropic](https://www.anthropic.com).
+
+Inline link with title: [Anthropic](https://www.anthropic.com "Home").
+
+Reference link: [Anthropic][anth].
+
+Collapsed reference: [anth][].
+
+Shortcut reference: [anth].
+
+Autolink: <https://www.anthropic.com>.
+
+Bare URL (GFM autolink): https://www.anthropic.com.
+
+Email autolink: <hello@example.com>.
+
+Image: ![alt text](image.png).
+
+Reference image: ![alt][img].
+
+[anth]: https://www.anthropic.com "Anthropic Home"
+[img]: image.png "Image title"
