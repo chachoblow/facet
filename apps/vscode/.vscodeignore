@@ -1,12 +1,14 @@
 .vscode/**
 .vscode-test/**
 src/**
+fixtures/**
 node_modules/**
 .gitignore
 .npmrc
 .eslintrc*
 .prettierrc*
 tsconfig.json
+tsconfig.webview.json
 esbuild.config.mjs
 **/*.ts
 **/*.map

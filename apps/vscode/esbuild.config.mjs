@@ -16,10 +16,24 @@ const extensionConfig = {
   logLevel: "info",
 };
 
+const webviewConfig = {
+  entryPoints: ["src/webview/main.ts"],
+  bundle: true,
+  format: "iife",
+  platform: "browser",
+  target: "es2022",
+  outfile: "dist/webview/main.js",
+  sourcemap: !production,
+  minify: production,
+  logLevel: "info",
+};
+
+const configs = [extensionConfig, webviewConfig];
+
 if (watch) {
-  const ctx = await esbuild.context(extensionConfig);
-  await ctx.watch();
+  const ctxs = await Promise.all(configs.map((c) => esbuild.context(c)));
+  await Promise.all(ctxs.map((c) => c.watch()));
   console.log("[watch] esbuild watching for changes…");
 } else {
-  await esbuild.build(extensionConfig);
+  await Promise.all(configs.map((c) => esbuild.build(c)));
 }
