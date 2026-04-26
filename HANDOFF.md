@@ -8,7 +8,7 @@ A pickup point for the next working session. Read this first, then dive into the
 - **V1 target**: Facet for VS Code, a Hybrid live-preview Surface for `.md` files, built on CodeMirror 6.
 - **Long-term vision**: Three Surfaces (Facet for VS Code, Facet Review, Facet Studio) sharing a Remark-based markdown core, with the git repo as the Content source of truth.
 - **Repo**: <https://github.com/chachoblow/facet> — public, `main` branch.
-- **Status**: Monorepo scaffolded (pnpm workspaces + TypeScript project references + esbuild, Node 24 / pnpm 10 pinned). Spikes 1–3 run; all green-lit Plan A. Spike 1 promoted to a permanent test at `packages/core/test/round-trip.test.ts`. **Impl order step 1 is done**: the VS Code extension hosts a `CustomTextEditorProvider` with a CodeMirror 6 webview; edits flow webview → `postMessage` → `WorkspaceEdit` → `TextDocument`, and saves write the buffer's bytes verbatim — the v1 structural mechanism for D5. `priority` is `"option"` so VS Code's default markdown editor stays primary until impl order step 12. `packages/core/src/index.ts` is still intentionally empty; parsing lands in step 2 (next).
+- **Status**: Monorepo scaffolded (pnpm workspaces + TypeScript project references + esbuild, Node 24 / pnpm 10 pinned). Spikes 1–3 run; all green-lit Plan A. Spike 1 promoted to a permanent test at `packages/core/test/round-trip.test.ts`. **Impl order steps 1–2 are done**: the VS Code extension hosts a `CustomTextEditorProvider` with a CodeMirror 6 webview; edits flow webview → `postMessage` → `WorkspaceEdit` → `TextDocument`, and saves write the buffer's bytes verbatim — the v1 structural mechanism for D5. `priority` is `"option"` so VS Code's default markdown editor stays primary until impl order step 12. `@facet/core` now exposes `parse(markdown): Root` (`packages/core/src/parse.ts`) backed by `unified + remark-parse + remark-gfm` — parse-only, no `remark-stringify` in the runtime path.
 
 ## Run it locally
 
@@ -37,29 +37,28 @@ facet/
 
 Spike conclusions are in each `spikes/*/README.md` if you need them.
 
-## Immediate next action: impl order step 2
+## Immediate next action: impl order step 3
 
-Remark for AST awareness in `packages/core/`. Parse-only — `remark-stringify` stays a `devDependency` for the round-trip test (`packages/core/test/round-trip.test.ts`) and must not be imported from `src/`. The save path in `apps/vscode/` is structural (verbatim writes); never serialize on save.
+Hybrid live-preview for **inline marks** — bold, italic, links — in the CodeMirror 6 webview at `apps/vscode/src/webview/`. The shape: when the cursor is outside the mark, render it formatted (no syntax characters visible); when the cursor enters the mark's range, reveal the syntax for editing. CodeMirror decorations + an editor extension that observes selection.
 
-Concretely:
+The AST source is `parse()` from `@facet/core` (`packages/core/src/parse.ts`). The webview should call it on document changes and walk the mdast for `strong`, `emphasis`, and `link` nodes — using their `position` data to drive decorations. Don't reinvent walking logic in the webview; if you find yourself wanting helpers like `findInlineMarks`, add them to `@facet/core` so future Surfaces (Facet Review, Facet Studio) can reuse them.
 
-1. Add `unified` + `remark-parse` + `remark-gfm` as dependencies of `@facet/core`.
-2. Expose a `parse(markdown: string)` (or similar) from `packages/core/src/index.ts` that returns the mdast root.
-3. Add unit tests in `packages/core/test/` covering the basic shapes Facet will lean on — headings, lists, links, fenced code, GFM tables, GFM task lists.
-4. (Optional this step.) Shape one or two AST-query primitives later steps will use, e.g. `findHeadings`, `findLinks`.
+Out of scope this step: blocks (headings, lists, blockquotes, code) — that's step 4. Tables and task lists are step 5.
 
-Out of scope: wiring the AST into the VS Code extension. The webview stays plain CodeMirror with no AST awareness; AST-driven decoration starts in step 3 (Hybrid live-preview for inline marks).
+Guardrails worth re-reading first: D5 (round-trip — never serialize on save; the structural mechanism is already in place) and D6 (CommonMark + GFM only).
+
+AST-query primitives like `findHeadings`/`findLinks` were intentionally **not** added in step 2 — no consumer needed them yet. Step 3 will be the first real consumer; add them then if helpful.
 
 ## Implementation order
 
 Done:
 
 1. ✅ CodeMirror 6 inside the `CustomTextEditorProvider`, writing the buffer verbatim on save (the production embodiment of D5). esbuild builds two bundles (extension/Node CJS, webview/browser IIFE); tsconfigs are split so the webview gets DOM lib. `priority="option"` keeps VS Code's default markdown editor primary until step 12. F5 dev loop wired in `apps/vscode/.vscode/` with `fixtures/sample.md`.
+2. ✅ Remark integration for AST awareness — `@facet/core` exposes `parse(markdown): Root` via `unified + remark-parse + remark-gfm`. Parse-only; `remark-stringify` stays a `devDependency` for the round-trip test. Coverage: ATX headings, ordered/unordered lists, inline links with title, fenced code with language, GFM tables with alignment, GFM task list checked state, GFM strikethrough.
 
 Ahead, in order:
 
-2. **Next:** Remark integration for AST awareness — parse only; no `remark-stringify` in the save path.
-3. Hybrid live-preview for inline marks (bold, italic, links).
+3. **Next:** Hybrid live-preview for inline marks (bold, italic, links).
 4. Hybrid live-preview for blocks (headings, lists, blockquotes, code).
 5. Tables, task lists.
 6. Frontmatter (collapsed block, click to expand).
