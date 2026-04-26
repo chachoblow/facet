@@ -1,0 +1,23 @@
+{
+  "name": "facet",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Markdown editing experience for shared alignment across humans, AI agents, and future-self.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chachoblow/facet.git"
+  },
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@10.33.2",
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write ."
+  }
+}
