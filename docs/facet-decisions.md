@@ -107,8 +107,13 @@ A record of meaningful design decisions made during initial scoping, the alterna
 - Necessary for cross-Surface portability (the same Markdown file edited in Facet for VS Code and Facet Studio should not drift).
 
 **Implementation implications:**
-- Use **Remark / unified** for parse and serialize, even though CodeMirror has its own markdown handling.
-- Build a Round-trip fidelity test suite early. Run it against a corpus of real-world markdown (existing repo files, GitHub READMEs, etc.) before shipping v1.
+- **Remark / unified** is used for **parsing only** in v1 (rendering decorations, link resolution, frontmatter extraction, semantic queries).
+- **`remark-stringify` is not called at save time.** CodeMirror owns the text buffer and saves write its bytes verbatim. This is what makes byte-identical round-trip trivially achievable; `mdast` is a *semantic* AST and *cannot* round-trip arbitrary markdown by design (indented vs fenced code, intra-cell table whitespace, tight/loose list spacing, and other concrete-syntax details are not in the parsed tree).
+- The spike at [`spikes/01-roundtrip-fidelity/`](../spikes/01-roundtrip-fidelity/) is the seed of a permanent test suite. Its job is to **guard against `remark-stringify` accidentally creeping into the save path** and to **track Remark parsing changes** that might affect downstream features. Promote it into `packages/core/` once the monorepo is scaffolded.
+
+**When to revisit:**
+- When **Facet Studio** (True WYSIWYG) is built and genuinely needs an AST→markdown serializer.
+- If an opt-in **"Format document"** command is desired (Prettier-style — explicit Author invocation, mutation expected). Both are out of scope for v1.
 
 ---
 

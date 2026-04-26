@@ -38,8 +38,8 @@ The shared core across all three Surfaces is the **markdown content + the Remark
 
 - **VS Code integration**: `CustomTextEditorProvider`. The `.md` file remains the Content source of truth; VS Code handles undo/redo, dirty state, find/replace, and the file lifecycle natively. The webview hosts the rendering/editing layer, not a parallel state store.
 - **Editor library**: **CodeMirror 6**, in Hybrid live-preview configuration. Battle-tested in Obsidian and VS Code itself. Excellent performance and cursor behavior. The right fit for Hybrid live-preview; not the right fit for True WYSIWYG (deferred to Facet Studio).
-- **Markdown parsing**: **Remark / unified** for parse and serialize, even though CodeMirror has its own markdown extension. This keeps the AST consistent across future web Surfaces and gives us a single, well-supported parser to reason about.
-- **Round-trip fidelity is a foundational concern.** Saving a file must produce byte-identical markdown unless the user actually changed something. This protects git history today and is a prerequisite for stable Thread anchoring in Facet Review. Test this aggressively.
+- **Markdown parsing**: **Remark / unified** for **parsing**, even though CodeMirror has its own markdown extension. This keeps the AST consistent across future web Surfaces and gives us a single, well-supported parser to reason about. Saves write the CodeMirror buffer verbatim — `remark-stringify` is not in the save path. See [`spikes/01-roundtrip-fidelity/README.md`](../spikes/01-roundtrip-fidelity/README.md).
+- **Round-trip fidelity is a foundational concern.** Saving a file must produce byte-identical markdown unless the user actually changed something. This protects git history today and is a prerequisite for stable Thread anchoring in Facet Review. We preserve this by not serializing the AST at save time: CodeMirror owns the text buffer, and saves write its bytes verbatim. Test this aggressively.
 - **No custom markdown syntax.** Stick to CommonMark + GFM. Custom syntax forks the parser and breaks portability across Surfaces and external renderers (GitHub, ADO, etc.).
 
 ## V1 features
@@ -106,7 +106,7 @@ The following are deferred. Some are tracked as future runway, some are explicit
 
 These are choices we are making in v1 *specifically* because they keep doors open for Facet Review and Facet Studio:
 
-1. **Remark / unified for parse and serialize.** Same AST the future Surfaces will use. Same parser, same edge cases, one codebase to debug.
+1. **Remark / unified for parsing.** Same AST the future Surfaces will use. Same parser, same edge cases, one codebase to debug. (`remark-stringify` is deliberately not in the v1 save path — see Architecture and Decision D5.)
 2. **Aggressive round-trip fidelity testing.** A v1 that subtly mutates `- [ ]` into `* [ ]` or reflows lists will corrupt git history *and* break stable Thread anchoring later.
 3. **No custom markdown syntax.** Files written in v1 must render correctly on GitHub, ADO, and any future Surface without special handling.
 4. **Library-agnostic core where reasonable.** Logic that handles markdown parsing, Frontmatter extraction, and link resolution should live separately from CodeMirror-specific code, so it can be reused by Milkdown / a Renderer / a Thread system later. Don't over-engineer this — just don't bury it inside CodeMirror plugins.

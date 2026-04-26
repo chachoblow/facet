@@ -8,7 +8,7 @@ A pickup point for the next working session. Read this first, then dive into the
 - **V1 target**: Facet for VS Code, a Hybrid live-preview Surface for `.md` files, built on CodeMirror 6.
 - **Long-term vision**: Three Surfaces (Facet for VS Code, Facet Review, Facet Studio) sharing a Remark-based markdown core, with the git repo as the Content source of truth.
 - **Repo**: <https://github.com/chachoblow/facet> — public, `main` branch, currently contains only docs and a `.gitignore`.
-- **Status**: Pre-implementation. Design converged. No code yet.
+- **Status**: Pre-implementation. Spike 1 run; D5 architecture refined to parser-only. No production code yet.
 
 ## Read these first (in order)
 
@@ -22,6 +22,10 @@ A pickup point for the next working session. Read this first, then dive into the
 **Do these before scaffolding anything.** Each is a few hours of work. Any one failing would change the architecture, and it's far cheaper to find out now than after a v1 build.
 
 ### Spike 1 — Round-trip fidelity through Remark
+
+**Status: Run (this spike directory).** See [`spikes/01-roundtrip-fidelity/README.md`](spikes/01-roundtrip-fidelity/README.md).
+
+**Conclusion**: Remark cannot round-trip arbitrary markdown by AST design. v1 resolves this by treating Remark as parser-only and saving the CodeMirror buffer verbatim. Original method/criteria retained below for context.
 
 **Goal**: Confirm Remark can parse and serialize real-world markdown without unacceptable mutations.
 
@@ -97,8 +101,8 @@ facet/
 
 Each step delivers something demonstrable end-to-end:
 
-1. CodeMirror 6 in the custom editor, writing back to disk with byte-perfect round-trip
-2. Remark integration for AST awareness
+1. CodeMirror 6 in the custom editor, writing the CodeMirror buffer verbatim. Round-trip fidelity comes from never serializing the AST, not from a perfect serializer.
+2. Remark integration for AST awareness — parse only; no `remark-stringify` in the save path.
 3. Hybrid live-preview for inline marks (bold, italic, links)
 4. Hybrid live-preview for blocks (headings, lists, blockquotes, code)
 5. Tables, task lists
@@ -128,6 +132,6 @@ The acceptance criteria are at the bottom of [`docs/facet-spec-v1.md`](docs/face
 A few things easy to forget under time pressure:
 
 - **Use the canonical terms** from `UBIQUITOUS_LANGUAGE.md` in any new docs or code. Especially **Surface** vs **Facet** and **Thread** vs **Comment**.
-- **Round-trip fidelity is non-negotiable** (Decision D5). Don't ship a v1 that mutates real-world markdown.
+- **Round-trip fidelity is non-negotiable** (Decision D5). Don't ship a v1 that mutates real-world markdown. In v1 this is preserved structurally: the save path writes the CodeMirror buffer's bytes verbatim. `remark-stringify` is not called on save.
 - **No custom markdown syntax** (Decision D6). Stay within CommonMark + GFM. The "publish as code" wiki vision depends on it.
 - **Plan B is real** (Decision D3). If CodeMirror's Hybrid live-preview turns into a swamp, switching Facet for VS Code to Milkdown is a legitimate move, not a failure.
