@@ -1,0 +1,35 @@
+{
+  "name": "@facet/vscode-extension",
+  "displayName": "Facet",
+  "description": "Markdown editing experience for shared alignment across humans, AI agents, and future-self.",
+  "version": "0.0.0",
+  "private": true,
+  "publisher": "facet",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0",
+    "node": ">=24"
+  },
+  "main": "./dist/extension.js",
+  "categories": ["Programming Languages", "Other"],
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "facet.hello",
+        "title": "Facet: Hello (scaffold)"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node esbuild.config.mjs --production",
+    "watch": "node esbuild.config.mjs --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/vscode": "^1.90.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.0"
+  }
+}
