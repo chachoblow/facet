@@ -1,0 +1,15 @@
+node_modules
+dist
+out
+coverage
+pnpm-lock.yaml
+**/__file_snapshots__/**
+**/test/fixtures/**
+*.tsbuildinfo
+spikes/
+
+# Hand-authored prose — not subject to prettier
+README.md
+HANDOFF.md
+CLAUDE.md
+docs/

@@ -30,8 +30,6 @@ describe("Remark round-trip", () => {
   it.each(fixtures)("%s: parse + stringify is stable", async (fixture) => {
     const input = readFileSync(join(fixturesDir, fixture), "utf8");
     const output = String(await processor.process(input));
-    await expect(output).toMatchFileSnapshot(
-      `./__file_snapshots__/${fixture}.snap`,
-    );
+    await expect(output).toMatchFileSnapshot(`./__file_snapshots__/${fixture}.snap`);
   });
 });
