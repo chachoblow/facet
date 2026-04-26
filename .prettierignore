@@ -5,6 +5,7 @@ coverage
 pnpm-lock.yaml
 **/__file_snapshots__/**
 **/test/fixtures/**
+apps/vscode/fixtures/
 *.tsbuildinfo
 spikes/
 
