@@ -17,17 +17,27 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
     document: vscode.TextDocument,
     webviewPanel: vscode.WebviewPanel,
   ): Promise<void> {
+    const docDir = vscode.Uri.joinPath(document.uri, "..");
+    const workspaceRoot = vscode.workspace.getWorkspaceFolder(document.uri)?.uri;
+    const imageRoot = workspaceRoot ?? docDir;
+
     webviewPanel.webview.options = {
       enableScripts: true,
-      localResourceRoots: [vscode.Uri.joinPath(this.context.extensionUri, "dist")],
+      localResourceRoots: [
+        vscode.Uri.joinPath(this.context.extensionUri, "dist"),
+        imageRoot,
+      ],
     };
 
     webviewPanel.webview.html = this.getHtml(webviewPanel.webview);
+
+    const baseUri = webviewPanel.webview.asWebviewUri(docDir).toString();
 
     const sendUpdate = (): void => {
       void webviewPanel.webview.postMessage({
         type: "update",
         text: document.getText(),
+        baseUri,
       });
     };
 
@@ -156,6 +166,12 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
     }
     .facet-frontmatter-widget:hover {
       background: var(--vscode-list-hoverBackground, rgba(127, 127, 127, 0.16));
+    }
+
+    .facet-image {
+      display: block;
+      max-width: 100%;
+      height: auto;
     }
   </style>
 </head>

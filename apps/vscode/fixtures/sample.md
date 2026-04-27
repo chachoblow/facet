@@ -45,4 +45,14 @@ console.log(greeting);
 | a    |   b    |     c |
 | dd   |   ee   |    ff |
 
+## Images
+
+A local SVG resolved via `asWebviewUri()`:
+
+![Facet logo](facet-logo.svg)
+
+A remote https image (paste any public URL to verify CSP + remote rendering):
+
+![Remote](https://codemirror.net/style/logo/overleaf.png)
+
 This is an edit. 

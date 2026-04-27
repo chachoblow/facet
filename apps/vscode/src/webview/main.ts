@@ -3,7 +3,9 @@ import { EditorView, basicSetup } from "codemirror";
 import { blockMarksField } from "./block-marks.js";
 import { codeMarksField, highlighterReady } from "./code-marks.js";
 import { frontmatterMarksField } from "./frontmatter-marks.js";
+import { createImageMarksField, type ResolveUrl } from "./image-marks.js";
 import { inlineMarksField } from "./inline-marks.js";
+import { resolveImageUrl } from "./resolve-image-url.js";
 import { tableMarksField } from "./table-marks.js";
 
 declare function acquireVsCodeApi(): {
@@ -16,7 +18,7 @@ const remote = Annotation.define<boolean>();
 
 let view: EditorView | null = null;
 
-function createView(initialDoc: string, parent: HTMLElement): EditorView {
+function createView(initialDoc: string, parent: HTMLElement, resolve: ResolveUrl): EditorView {
   const state = EditorState.create({
     doc: initialDoc,
     extensions: [
@@ -25,6 +27,7 @@ function createView(initialDoc: string, parent: HTMLElement): EditorView {
       blockMarksField,
       codeMarksField,
       tableMarksField,
+      createImageMarksField(resolve),
       inlineMarksField,
       EditorView.updateListener.of((update) => {
         if (!update.docChanged) return;
@@ -50,14 +53,19 @@ function applyRemoteUpdate(text: string): void {
 }
 
 window.addEventListener("message", async (event) => {
-  const msg = event.data as { type?: string; text?: string };
+  const msg = event.data as { type?: string; text?: string; baseUri?: string };
   if (msg.type !== "update" || typeof msg.text !== "string") return;
 
   if (view === null) {
     const parent = document.getElementById("editor");
     if (!parent) return;
     await highlighterReady;
-    view = createView(msg.text, parent);
+    const baseUri = msg.baseUri;
+    const resolve: ResolveUrl =
+      typeof baseUri === "string" && baseUri.length > 0
+        ? (url) => resolveImageUrl(url, baseUri)
+        : (url) => url;
+    view = createView(msg.text, parent, resolve);
   } else {
     applyRemoteUpdate(msg.text);
   }
