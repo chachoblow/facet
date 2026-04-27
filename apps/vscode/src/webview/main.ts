@@ -5,6 +5,7 @@ import { codeMarksField, highlighterReady } from "./code-marks.js";
 import { frontmatterMarksField } from "./frontmatter-marks.js";
 import { createImageMarksField, type ResolveUrl } from "./image-marks.js";
 import { inlineMarksField } from "./inline-marks.js";
+import { linkClickHandler } from "./link-click.js";
 import { resolveImageUrl } from "./resolve-image-url.js";
 import { tableMarksField } from "./table-marks.js";
 
@@ -29,6 +30,7 @@ function createView(initialDoc: string, parent: HTMLElement, resolve: ResolveUrl
       tableMarksField,
       createImageMarksField(resolve),
       inlineMarksField,
+      linkClickHandler((url) => vscode.postMessage({ type: "openLink", url })),
       EditorView.updateListener.of((update) => {
         if (!update.docChanged) return;
         if (update.transactions.some((t) => t.annotation(remote))) return;

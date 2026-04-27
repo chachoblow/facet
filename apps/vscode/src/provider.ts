@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+import { findHeadingLineForAnchor } from "@facet/core";
+import { classifyLinkTarget } from "./classify-link-target.js";
 
 export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
   public static readonly viewType = "facet.markdownEditor";
@@ -23,10 +25,7 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
 
     webviewPanel.webview.options = {
       enableScripts: true,
-      localResourceRoots: [
-        vscode.Uri.joinPath(this.context.extensionUri, "dist"),
-        imageRoot,
-      ],
+      localResourceRoots: [vscode.Uri.joinPath(this.context.extensionUri, "dist"), imageRoot],
     };
 
     webviewPanel.webview.html = this.getHtml(webviewPanel.webview);
@@ -49,13 +48,37 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
 
     webviewPanel.onDidDispose(() => docSubscription.dispose());
 
-    webviewPanel.webview.onDidReceiveMessage((message: { type: string; text?: string }) => {
-      if (message.type === "edit" && typeof message.text === "string") {
-        void this.applyEdit(document, message.text);
-      } else if (message.type === "ready") {
-        sendUpdate();
+    webviewPanel.webview.onDidReceiveMessage(
+      (message: { type: string; text?: string; url?: string }) => {
+        if (message.type === "edit" && typeof message.text === "string") {
+          void this.applyEdit(document, message.text);
+        } else if (message.type === "ready") {
+          sendUpdate();
+        } else if (message.type === "openLink" && typeof message.url === "string") {
+          void this.openLink(document, message.url);
+        }
+      },
+    );
+  }
+
+  private async openLink(document: vscode.TextDocument, rawUrl: string): Promise<void> {
+    const target = classifyLinkTarget(rawUrl);
+    if (target.kind === "remote") {
+      await vscode.commands.executeCommand("vscode.open", vscode.Uri.parse(target.url));
+      return;
+    }
+    const targetUri =
+      target.path === "" ? document.uri : vscode.Uri.joinPath(document.uri, "..", target.path);
+    const targetDoc = await vscode.workspace.openTextDocument(targetUri);
+    const editor = await vscode.window.showTextDocument(targetDoc);
+    if (target.anchor !== null) {
+      const line = findHeadingLineForAnchor(targetDoc.getText(), target.anchor);
+      if (line !== null) {
+        const range = new vscode.Range(line, 0, line, 0);
+        editor.revealRange(range, vscode.TextEditorRevealType.AtTop);
+        editor.selection = new vscode.Selection(line, 0, line, 0);
       }
-    });
+    }
   }
 
   private async applyEdit(document: vscode.TextDocument, newText: string): Promise<void> {
@@ -90,7 +113,7 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
     .cm-scroller { font-family: inherit; font-size: inherit; }
     .facet-strong { font-weight: bold; }
     .facet-emphasis { font-style: italic; }
-    .facet-link { color: var(--vscode-textLink-foreground); text-decoration: underline; }
+    .facet-link { color: var(--vscode-textLink-foreground); text-decoration: underline; cursor: pointer; }
 
     .facet-heading-line-1 { font-size: 1.6em; font-weight: 700; line-height: 1.2; }
     .facet-heading-line-2 { font-size: 1.4em; font-weight: 700; line-height: 1.2; }

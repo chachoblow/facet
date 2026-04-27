@@ -20,8 +20,7 @@ function collectByPredicate(
   return out;
 }
 
-const widgetPredicate = (_from: number, _to: number, v: Decoration) =>
-  v.spec.widget !== undefined;
+const widgetPredicate = (_from: number, _to: number, v: Decoration) => v.spec.widget !== undefined;
 
 describe("image-marks buildImageDecorations", () => {
   it("emits no decorations for a doc with no images", () => {
