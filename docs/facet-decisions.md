@@ -176,9 +176,9 @@ A record of meaningful design decisions made during initial scoping, the alterna
 
 **When to revisit:**
 
-- **Before step 10 (Mermaid).** Mermaid is render-not-edit by nature; if we build it as a third bespoke decoration variant, we're committing to the line-based model. Make this decision explicitly there.
-- **After step 7 (code blocks)** if syntax highlighting + visible-but-muted fences + a `lang` badge starts to feel like overlay-in-disguise. If we're already 80% of the way to a layer for code, generalize.
-- **During step 13 (polish)** if the parked cursor edge cases (most acute on frontmatter) feel actively bad rather than tolerable in the "live on the team wiki for a week" acceptance test.
+- ~~**Before step 10 (Mermaid).** Mermaid is render-not-edit by nature; if we build it as a third bespoke decoration variant, we're committing to the line-based model. Make this decision explicitly there.~~ **Cleared.** Step 10 shipped Mermaid as a seventh StateField using the existing line-based reveal pattern (`Decoration.replace({ block: true })` over the whole fenced range with a `MermaidWidget`, plus `EditorView.atomicRanges` for arrow-key navigation, plus click-to-enter-source mirroring the frontmatter pattern). The async render lifecycle (lazy import, error placeholder) fit cleanly inside the existing `WidgetType` shape — no flicker observed in the EDH because `eq()` is keyed on code so unchanged source reuses the existing DOM. No D8 signal fired.
+- ~~**After step 7 (code blocks)** if syntax highlighting + visible-but-muted fences + a `lang` badge starts to feel like overlay-in-disguise.~~ **Cleared at step 7.** Block-level fence collapse + a `lang` badge widget on the opening fence fit the line-based pattern.
+- **During step 13 (polish)** if the parked cursor edge cases (most acute on frontmatter and arrow-up/down across decorated lines) feel actively bad rather than tolerable in the "live on the team wiki for a week" acceptance test. **This is now the next active D8 checkpoint.**
 - **If D3's Plan B activates** (switch to Milkdown), this decision is moot — Milkdown gives overlay rendering for free.
 
 **Out of scope here:** D8 governs the rendering model only. Whether frontmatter eventually gets a properties-panel UI, whether tables get a grid editor, whether Mermaid gets PNG export — those are separate scope decisions, listed under "Open questions" below.
