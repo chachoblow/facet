@@ -7,4 +7,6 @@ export { findTables } from "./find-tables.js";
 export type { Table, TableRow, TableCell, ColumnAlign } from "./find-tables.js";
 export { findFrontmatter } from "./find-frontmatter.js";
 export type { Frontmatter } from "./find-frontmatter.js";
+export { findImages } from "./find-images.js";
+export type { Image } from "./find-images.js";
 export type { Root } from "mdast";
