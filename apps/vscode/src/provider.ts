@@ -202,6 +202,11 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
       padding: 8px 0;
       text-align: center;
       color: var(--vscode-descriptionForeground, inherit);
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .facet-mermaid:hover {
+      background: var(--vscode-list-hoverBackground, rgba(127, 127, 127, 0.08));
     }
     .facet-mermaid svg {
       max-width: 100%;

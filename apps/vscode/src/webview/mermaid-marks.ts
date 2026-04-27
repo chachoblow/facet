@@ -25,10 +25,18 @@ export class MermaidWidget extends WidgetType {
   constructor(readonly code: string) {
     super();
   }
-  override toDOM(): HTMLElement {
+  override toDOM(view: EditorView): HTMLElement {
     const el = document.createElement("div");
     el.className = "facet-mermaid";
     el.textContent = "Rendering…";
+    el.addEventListener("click", () => {
+      const pos = view.posAtDOM(el);
+      const line = view.state.doc.lineAt(pos);
+      const target =
+        line.number < view.state.doc.lines ? view.state.doc.line(line.number + 1) : line;
+      view.dispatch({ selection: { anchor: target.from } });
+      view.focus();
+    });
     void this.render(el);
     return el;
   }
@@ -98,5 +106,8 @@ export const mermaidMarksField = StateField.define<DecorationSet>({
     const sel = tr.state.selection.main;
     return buildMermaidDecorations(tr.state.doc, sel.from, sel.to);
   },
-  provide: (f) => EditorView.decorations.from(f),
+  provide: (f) => [
+    EditorView.decorations.from(f),
+    EditorView.atomicRanges.of((view) => view.state.field(f)),
+  ],
 });
