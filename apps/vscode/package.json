@@ -15,7 +15,11 @@
     "Programming Languages",
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onCommand:facet.setAsDefaultMarkdownEditor",
+    "onCommand:facet.restoreDefaultMarkdownEditor",
+    "onCommand:facet.viewSource"
+  ],
   "contributes": {
     "customEditors": [
       {
@@ -27,6 +31,23 @@
           }
         ],
         "priority": "option"
+      }
+    ],
+    "commands": [
+      {
+        "command": "facet.setAsDefaultMarkdownEditor",
+        "title": "Facet: Set as default markdown editor",
+        "category": "Facet"
+      },
+      {
+        "command": "facet.restoreDefaultMarkdownEditor",
+        "title": "Facet: Restore default markdown editor",
+        "category": "Facet"
+      },
+      {
+        "command": "facet.viewSource",
+        "title": "Facet: View source",
+        "category": "Facet"
       }
     ]
   },
