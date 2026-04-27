@@ -49,7 +49,7 @@ const fencedDoc = Text.of(["```javascript", "const x = 1;", "```", "next", ""]);
 
 describe("code-marks buildCodeDecorations — fenced with lang", () => {
   it("collapses both fences and emits line classes when the cursor is outside the block", () => {
-    const decos = buildCodeDecorations(fencedDoc, 31, 31, null);
+    const decos = buildCodeDecorations(fencedDoc, 31, 31, null, "github-dark");
 
     expect(lineDecoClasses(decos, 0)).toContain("facet-code-fence-line");
     expect(lineDecoClasses(decos, 14)).toContain("facet-code-line");
@@ -65,7 +65,7 @@ describe("code-marks buildCodeDecorations — fenced with lang", () => {
   });
 
   it("does not collapse fences when the cursor is on the opening fence", () => {
-    const decos = buildCodeDecorations(fencedDoc, 0, 0, null);
+    const decos = buildCodeDecorations(fencedDoc, 0, 0, null, "github-dark");
     expect(fenceCollapseAt(decos, 0, 13)).toBeNull();
     expect(fenceCollapseAt(decos, 27, 30)).toBeNull();
     // Line classes still present.
@@ -74,13 +74,13 @@ describe("code-marks buildCodeDecorations — fenced with lang", () => {
   });
 
   it("does not collapse fences when the cursor is on a content line", () => {
-    const decos = buildCodeDecorations(fencedDoc, 14, 14, null);
+    const decos = buildCodeDecorations(fencedDoc, 14, 14, null, "github-dark");
     expect(fenceCollapseAt(decos, 0, 13)).toBeNull();
     expect(fenceCollapseAt(decos, 27, 30)).toBeNull();
   });
 
   it("does not collapse fences when the cursor is on the closing fence", () => {
-    const decos = buildCodeDecorations(fencedDoc, 27, 27, null);
+    const decos = buildCodeDecorations(fencedDoc, 27, 27, null, "github-dark");
     expect(fenceCollapseAt(decos, 0, 13)).toBeNull();
     expect(fenceCollapseAt(decos, 27, 30)).toBeNull();
   });
@@ -95,7 +95,7 @@ const fencedNoLangDoc = Text.of(["```", "foo", "```", ""]);
 
 describe("code-marks buildCodeDecorations — fenced without lang", () => {
   it("collapses the opening fence with no widget when there is no lang", () => {
-    const decos = buildCodeDecorations(fencedNoLangDoc, 12, 12, null);
+    const decos = buildCodeDecorations(fencedNoLangDoc, 12, 12, null, "github-dark");
     const opening = fenceCollapseAt(decos, 0, 3);
     expect(opening).not.toBeNull();
     expect(opening?.spec.widget).toBeUndefined();
@@ -114,7 +114,7 @@ const indentedDoc = Text.of(["    foo", "    bar", ""]);
 
 describe("code-marks buildCodeDecorations — indented code block", () => {
   it("emits content line classes and never collapses anything", () => {
-    const decos = buildCodeDecorations(indentedDoc, 16, 16, null);
+    const decos = buildCodeDecorations(indentedDoc, 16, 16, null, "github-dark");
     expect(lineDecoClasses(decos, 0)).toContain("facet-code-line");
     expect(lineDecoClasses(decos, 8)).toContain("facet-code-line");
     // No facet-code-fence-line on either content line.
@@ -131,7 +131,7 @@ describe("code-marks buildCodeDecorations — indented code block", () => {
 describe("code-marks buildCodeDecorations — no code blocks", () => {
   it("emits no decorations for a plain prose doc", () => {
     const doc = Text.of(["# Heading", "Some text.", ""]);
-    expect(buildCodeDecorations(doc, 0, 0, null).size).toBe(0);
+    expect(buildCodeDecorations(doc, 0, 0, null, "github-dark").size).toBe(0);
   });
 });
 
@@ -143,9 +143,23 @@ describe("code-marks buildCodeDecorations — no code blocks", () => {
 //   line 5: "after"       offsets 30..35
 const mermaidDoc = Text.of(["```mermaid", "graph TD", "A-->B", "```", "after", ""]);
 
+describe("code-marks buildCodeDecorations — theme propagation", () => {
+  it("forwards the theme argument to the highlighter", () => {
+    const calls: { lang: string; theme: string }[] = [];
+    const fakeHl = {
+      codeToTokensBase(_code: string, opts: { lang: string; theme: string }) {
+        calls.push({ lang: opts.lang, theme: opts.theme });
+        return [];
+      },
+    };
+    buildCodeDecorations(fencedDoc, 31, 31, fakeHl as never, "github-light");
+    expect(calls).toEqual([{ lang: "javascript", theme: "github-light" }]);
+  });
+});
+
 describe("code-marks buildCodeDecorations — mermaid blocks", () => {
   it("emits line classes but no fence collapse for a mermaid block (cursor off)", () => {
-    const decos = buildCodeDecorations(mermaidDoc, 30, 30, null);
+    const decos = buildCodeDecorations(mermaidDoc, 30, 30, null, "github-dark");
     // Line classes still present so source-mode styling matches other code blocks.
     expect(lineDecoClasses(decos, 0)).toContain("facet-code-fence-line");
     expect(lineDecoClasses(decos, 11)).toContain("facet-code-line");

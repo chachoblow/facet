@@ -12,17 +12,16 @@ let renderCounter = 0;
 
 function loadMermaid(): Promise<MermaidApi> {
   if (mermaidPromise === null) {
-    mermaidPromise = import("mermaid").then((mod) => {
-      const m = mod.default as MermaidApi;
-      m.initialize({ startOnLoad: false, theme: "dark", securityLevel: "strict" });
-      return m;
-    });
+    mermaidPromise = import("mermaid").then((mod) => mod.default as MermaidApi);
   }
   return mermaidPromise;
 }
 
 export class MermaidWidget extends WidgetType {
-  constructor(readonly code: string) {
+  constructor(
+    readonly code: string,
+    readonly theme: string,
+  ) {
     super();
   }
   override toDOM(view: EditorView): HTMLElement {
@@ -41,11 +40,12 @@ export class MermaidWidget extends WidgetType {
     return el;
   }
   override eq(other: MermaidWidget): boolean {
-    return this.code === other.code;
+    return this.code === other.code && this.theme === other.theme;
   }
   private async render(el: HTMLElement): Promise<void> {
     try {
       const mermaid = await loadMermaid();
+      mermaid.initialize({ startOnLoad: false, theme: this.theme, securityLevel: "strict" });
       const id = `facet-mermaid-${++renderCounter}`;
       const { svg } = await mermaid.render(id, this.code);
       el.innerHTML = svg;
@@ -58,7 +58,12 @@ export class MermaidWidget extends WidgetType {
 
 const FENCE_RE = /^\s*(```|~~~)/;
 
-export function buildMermaidDecorations(doc: Text, selFrom: number, selTo: number): DecorationSet {
+export function buildMermaidDecorations(
+  doc: Text,
+  selFrom: number,
+  selTo: number,
+  theme: string,
+): DecorationSet {
   const root = parse(doc.toString());
   const blocks = findBlocks(root);
   const ranges: Range<Decoration>[] = [];
@@ -86,7 +91,7 @@ export function buildMermaidDecorations(doc: Text, selFrom: number, selTo: numbe
     }
 
     ranges.push(
-      Decoration.replace({ block: true, widget: new MermaidWidget(code) }).range(
+      Decoration.replace({ block: true, widget: new MermaidWidget(code, theme) }).range(
         block.start,
         block.end,
       ),
@@ -96,18 +101,20 @@ export function buildMermaidDecorations(doc: Text, selFrom: number, selTo: numbe
   return RangeSet.of(ranges, true);
 }
 
-export const mermaidMarksField = StateField.define<DecorationSet>({
-  create(state) {
-    const sel = state.selection.main;
-    return buildMermaidDecorations(state.doc, sel.from, sel.to);
-  },
-  update(deco, tr) {
-    if (!tr.docChanged && !tr.selection) return deco.map(tr.changes);
-    const sel = tr.state.selection.main;
-    return buildMermaidDecorations(tr.state.doc, sel.from, sel.to);
-  },
-  provide: (f) => [
-    EditorView.decorations.from(f),
-    EditorView.atomicRanges.of((view) => view.state.field(f)),
-  ],
-});
+export function createMermaidMarksField(theme: string): StateField<DecorationSet> {
+  return StateField.define<DecorationSet>({
+    create(state) {
+      const sel = state.selection.main;
+      return buildMermaidDecorations(state.doc, sel.from, sel.to, theme);
+    },
+    update(deco, tr) {
+      if (!tr.docChanged && !tr.selection) return deco.map(tr.changes);
+      const sel = tr.state.selection.main;
+      return buildMermaidDecorations(tr.state.doc, sel.from, sel.to, theme);
+    },
+    provide: (f) => [
+      EditorView.decorations.from(f),
+      EditorView.atomicRanges.of((view) => view.state.field(f)),
+    ],
+  });
+}

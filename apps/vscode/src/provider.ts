@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { findHeadingLineForAnchor } from "@facet/core";
 import { classifyLinkTarget } from "./classify-link-target.js";
+import { themeKindFromVsCodeEnum } from "./theme-kind.js";
 
 export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
   public static readonly viewType = "facet.markdownEditor";
@@ -37,6 +38,7 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
         type: "update",
         text: document.getText(),
         baseUri,
+        themeKind: themeKindFromVsCodeEnum(vscode.window.activeColorTheme.kind as 1 | 2 | 3 | 4),
       });
     };
 
@@ -46,7 +48,14 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
       }
     });
 
-    webviewPanel.onDidDispose(() => docSubscription.dispose());
+    const themeSubscription = vscode.window.onDidChangeActiveColorTheme(() => {
+      sendUpdate();
+    });
+
+    webviewPanel.onDidDispose(() => {
+      docSubscription.dispose();
+      themeSubscription.dispose();
+    });
 
     webviewPanel.webview.onDidReceiveMessage(
       (message: { type: string; text?: string; url?: string }) => {
@@ -213,7 +222,7 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
       height: auto;
     }
     .facet-mermaid-error {
-      color: var(--vscode-errorForeground, #f48771);
+      color: var(--vscode-errorForeground);
       font-family: var(--vscode-editor-font-family, monospace);
       font-size: 0.85em;
       text-align: left;

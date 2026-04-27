@@ -2,9 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "rootDir": "./src/webview",
+    "rootDir": "./src",
     "outDir": "./dist/webview-types",
     "tsBuildInfoFile": "./dist/.tsbuildinfo.webview"
   },
-  "include": ["src/webview/**/*"]
+  "include": ["src/webview/**/*", "src/theme-kind.ts"]
 }

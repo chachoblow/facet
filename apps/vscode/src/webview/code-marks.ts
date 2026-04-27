@@ -4,6 +4,7 @@ import { Decoration, type DecorationSet, EditorView, WidgetType } from "@codemir
 import { createHighlighterCore, type HighlighterCore } from "shiki/core";
 import { createJavaScriptRegexEngine } from "@shikijs/engine-javascript";
 import githubDark from "@shikijs/themes/github-dark";
+import githubLight from "@shikijs/themes/github-light";
 import bash from "@shikijs/langs/bash";
 import css from "@shikijs/langs/css";
 import go from "@shikijs/langs/go";
@@ -17,12 +18,10 @@ import tsx from "@shikijs/langs/tsx";
 import typescript from "@shikijs/langs/typescript";
 import yaml from "@shikijs/langs/yaml";
 
-const THEME = "github-dark";
-
 let highlighterInstance: HighlighterCore | null = null;
 
 export const highlighterReady: Promise<void> = createHighlighterCore({
-  themes: [githubDark],
+  themes: [githubDark, githubLight],
   langs: [bash, css, go, html, javascript, json, markdown, python, rust, tsx, typescript, yaml],
   engine: createJavaScriptRegexEngine(),
 }).then((h) => {
@@ -61,6 +60,7 @@ export function buildCodeDecorations(
   selFrom: number,
   selTo: number,
   hl: HighlighterCore | null,
+  theme: string,
 ): DecorationSet {
   const root = parse(doc.toString());
   const blocks = findBlocks(root);
@@ -108,7 +108,7 @@ export function buildCodeDecorations(
         const code = doc.sliceString(codeFrom, codeTo);
         let tokenLines: { content: string; color?: string }[][] | null = null;
         try {
-          tokenLines = hl.codeToTokensBase(code, { lang: block.lang, theme: THEME });
+          tokenLines = hl.codeToTokensBase(code, { lang: block.lang, theme });
         } catch {
           tokenLines = null;
         }
@@ -139,15 +139,17 @@ export function buildCodeDecorations(
   return RangeSet.of(ranges, true);
 }
 
-export const codeMarksField = StateField.define<DecorationSet>({
-  create(state) {
-    const sel = state.selection.main;
-    return buildCodeDecorations(state.doc, sel.from, sel.to, highlighterInstance);
-  },
-  update(deco, tr) {
-    if (!tr.docChanged && !tr.selection) return deco.map(tr.changes);
-    const sel = tr.state.selection.main;
-    return buildCodeDecorations(tr.state.doc, sel.from, sel.to, highlighterInstance);
-  },
-  provide: (f) => EditorView.decorations.from(f),
-});
+export function createCodeMarksField(theme: string): StateField<DecorationSet> {
+  return StateField.define<DecorationSet>({
+    create(state) {
+      const sel = state.selection.main;
+      return buildCodeDecorations(state.doc, sel.from, sel.to, highlighterInstance, theme);
+    },
+    update(deco, tr) {
+      if (!tr.docChanged && !tr.selection) return deco.map(tr.changes);
+      const sel = tr.state.selection.main;
+      return buildCodeDecorations(tr.state.doc, sel.from, sel.to, highlighterInstance, theme);
+    },
+    provide: (f) => EditorView.decorations.from(f),
+  });
+}
