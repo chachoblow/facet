@@ -12,17 +12,13 @@ describe("findImages", () => {
     // 0123456789012
     // ![alt](url)
     const images = findImages(parse("![alt](url)\n"));
-    expect(images).toEqual([
-      { start: 0, end: 11, url: "url", alt: "alt", title: null },
-    ]);
+    expect(images).toEqual([{ start: 0, end: 11, url: "url", alt: "alt", title: null }]);
   });
 
   it("captures the title when present", () => {
     // ![alt](url "title")
     const images = findImages(parse('![alt](url "title")\n'));
-    expect(images).toEqual([
-      { start: 0, end: 19, url: "url", alt: "alt", title: "title" },
-    ]);
+    expect(images).toEqual([{ start: 0, end: 19, url: "url", alt: "alt", title: "title" }]);
   });
 
   it("returns alt as empty string when alt is empty", () => {
