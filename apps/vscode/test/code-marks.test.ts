@@ -134,3 +134,25 @@ describe("code-marks buildCodeDecorations — no code blocks", () => {
     expect(buildCodeDecorations(doc, 0, 0, null).size).toBe(0);
   });
 });
+
+// Doc: ```mermaid\ngraph TD\nA-->B\n```\nafter\n
+//   line 1: "```mermaid"  offsets 0..10,  \n at 10
+//   line 2: "graph TD"    offsets 11..19, \n at 19
+//   line 3: "A-->B"       offsets 20..25, \n at 25
+//   line 4: "```"         offsets 26..29, \n at 29
+//   line 5: "after"       offsets 30..35
+const mermaidDoc = Text.of(["```mermaid", "graph TD", "A-->B", "```", "after", ""]);
+
+describe("code-marks buildCodeDecorations — mermaid blocks", () => {
+  it("emits line classes but no fence collapse for a mermaid block (cursor off)", () => {
+    const decos = buildCodeDecorations(mermaidDoc, 30, 30, null);
+    // Line classes still present so source-mode styling matches other code blocks.
+    expect(lineDecoClasses(decos, 0)).toContain("facet-code-fence-line");
+    expect(lineDecoClasses(decos, 11)).toContain("facet-code-line");
+    expect(lineDecoClasses(decos, 20)).toContain("facet-code-line");
+    expect(lineDecoClasses(decos, 26)).toContain("facet-code-fence-line");
+    // No fence collapse — mermaid-marks owns cursor-off rendering.
+    expect(fenceCollapseAt(decos, 0, 10)).toBeNull();
+    expect(fenceCollapseAt(decos, 26, 29)).toBeNull();
+  });
+});

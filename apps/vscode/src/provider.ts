@@ -196,6 +196,27 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
       max-width: 100%;
       height: auto;
     }
+
+    .facet-mermaid {
+      display: block;
+      padding: 8px 0;
+      text-align: center;
+      color: var(--vscode-descriptionForeground, inherit);
+    }
+    .facet-mermaid svg {
+      max-width: 100%;
+      height: auto;
+    }
+    .facet-mermaid-error {
+      color: var(--vscode-errorForeground, #f48771);
+      font-family: var(--vscode-editor-font-family, monospace);
+      font-size: 0.85em;
+      text-align: left;
+      padding: 8px;
+      border: 1px solid var(--vscode-editorWidget-border, rgba(127, 127, 127, 0.3));
+      border-radius: 4px;
+      background: var(--vscode-editorWidget-background, rgba(127, 127, 127, 0.08));
+    }
   </style>
 </head>
 <body>

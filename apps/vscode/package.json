@@ -51,6 +51,7 @@
     "@shikijs/langs": "4.0.2",
     "@shikijs/themes": "4.0.2",
     "codemirror": "^6.0.2",
+    "mermaid": "^11.4.0",
     "shiki": "^4.0.2"
   }
 }

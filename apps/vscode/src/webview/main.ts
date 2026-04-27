@@ -6,6 +6,7 @@ import { frontmatterMarksField } from "./frontmatter-marks.js";
 import { createImageMarksField, type ResolveUrl } from "./image-marks.js";
 import { inlineMarksField } from "./inline-marks.js";
 import { linkClickHandler } from "./link-click.js";
+import { mermaidMarksField } from "./mermaid-marks.js";
 import { resolveImageUrl } from "./resolve-image-url.js";
 import { tableMarksField } from "./table-marks.js";
 
@@ -27,6 +28,7 @@ function createView(initialDoc: string, parent: HTMLElement, resolve: ResolveUrl
       frontmatterMarksField,
       blockMarksField,
       codeMarksField,
+      mermaidMarksField,
       tableMarksField,
       createImageMarksField(resolve),
       inlineMarksField,

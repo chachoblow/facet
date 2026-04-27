@@ -85,7 +85,9 @@ export function buildCodeDecorations(
       ranges.push((isFence ? codeFenceLineDeco : codeLineDeco).range(line.from));
     }
 
-    if (!cursorInBlock) {
+    const isMermaid = block.lang === "mermaid";
+
+    if (!cursorInBlock && !isMermaid) {
       if (startLineIsFence) {
         const spec = block.lang
           ? { block: true, widget: new LangBadgeWidget(block.lang) }
@@ -97,7 +99,7 @@ export function buildCodeDecorations(
       }
     }
 
-    if (hl && block.lang && startLineIsFence) {
+    if (hl && block.lang && !isMermaid && startLineIsFence) {
       const contentStartLineNum = startLine.number + 1;
       const contentEndLineNum = endLineIsFence ? endLine.number - 1 : endLine.number;
       if (contentStartLineNum <= contentEndLineNum) {

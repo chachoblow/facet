@@ -54,6 +54,29 @@ A remote https image (paste any public URL to verify CSP + remote rendering):
 
 ![Remote](https://codemirror.net/style/logo/overleaf.png)
 
+## Diagrams
+
+A Mermaid block — cursor on the block reveals the source; cursor off renders the SVG.
+
+```mermaid
+graph TD
+    A[Author] -->|edits| B(Facet for VS Code)
+    B --> C{Save}
+    C -->|verbatim bytes| D[(Git repo)]
+    C -.->|future| E[Facet Review]
+```
+
+A second Mermaid block to verify both render independently:
+
+```mermaid
+sequenceDiagram
+    Author->>Facet: type Markdown
+    Facet->>CodeMirror: dispatch edit
+    CodeMirror-->>Facet: doc updated
+    Facet->>Extension: postMessage(edit)
+    Extension->>TextDocument: WorkspaceEdit
+```
+
 ## Links
 
 Click semantics: plain click on a rendered link follows it; clicking once the source is revealed (cursor inside the link) just positions the cursor.
