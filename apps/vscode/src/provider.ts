@@ -112,6 +112,19 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
     }
     .facet-code-fence-line { opacity: 0.55; }
 
+    .facet-code-lang-badge {
+      display: inline-block;
+      padding: 1px 8px;
+      margin: 0;
+      background: var(--vscode-editorWidget-background, rgba(127, 127, 127, 0.08));
+      border: 1px solid var(--vscode-editorWidget-border, rgba(127, 127, 127, 0.3));
+      border-radius: 4px 4px 0 0;
+      color: var(--vscode-descriptionForeground, inherit);
+      font-family: var(--vscode-editor-font-family, monospace);
+      font-size: 0.8em;
+      user-select: none;
+    }
+
     .facet-table-line {
       font-family: var(--vscode-editor-font-family, monospace);
       border-top: 1px solid var(--vscode-editorWidget-border, rgba(127, 127, 127, 0.3));

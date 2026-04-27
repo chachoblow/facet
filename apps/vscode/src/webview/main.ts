@@ -1,6 +1,7 @@
 import { Annotation, EditorState } from "@codemirror/state";
 import { EditorView, basicSetup } from "codemirror";
 import { blockMarksField } from "./block-marks.js";
+import { codeMarksField, highlighterReady } from "./code-marks.js";
 import { frontmatterMarksField } from "./frontmatter-marks.js";
 import { inlineMarksField } from "./inline-marks.js";
 import { tableMarksField } from "./table-marks.js";
@@ -22,6 +23,7 @@ function createView(initialDoc: string, parent: HTMLElement): EditorView {
       basicSetup,
       frontmatterMarksField,
       blockMarksField,
+      codeMarksField,
       tableMarksField,
       inlineMarksField,
       EditorView.updateListener.of((update) => {
@@ -47,13 +49,14 @@ function applyRemoteUpdate(text: string): void {
   });
 }
 
-window.addEventListener("message", (event) => {
+window.addEventListener("message", async (event) => {
   const msg = event.data as { type?: string; text?: string };
   if (msg.type !== "update" || typeof msg.text !== "string") return;
 
   if (view === null) {
     const parent = document.getElementById("editor");
     if (!parent) return;
+    await highlighterReady;
     view = createView(msg.text, parent);
   } else {
     applyRemoteUpdate(msg.text);

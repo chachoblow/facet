@@ -55,8 +55,6 @@ const headingLineDecos = [1, 2, 3, 4, 5, 6].map((d) =>
 );
 const blockquoteLineDeco = Decoration.line({ class: "facet-blockquote-line" });
 const listLineDeco = Decoration.line({ class: "facet-list-line" });
-const codeLineDeco = Decoration.line({ class: "facet-code-line" });
-const codeFenceLineDeco = Decoration.line({ class: "facet-code-fence-line" });
 
 export function buildDecorations(doc: Text, selFrom: number, selTo: number): DecorationSet {
   const root = parse(doc.toString());
@@ -108,12 +106,6 @@ export function buildDecorations(doc: Text, selFrom: number, selTo: number): Dec
         } else if (!block.ordered && block.markerStart < block.markerEnd) {
           ranges.push(bulletDeco.range(block.markerStart, block.markerEnd));
         }
-      }
-    } else if (block.type === "code") {
-      for (let n = startLine.number; n <= endLine.number; n++) {
-        const line = doc.line(n);
-        const isFence = /^\s*(```|~~~)/.test(line.text);
-        ranges.push((isFence ? codeFenceLineDeco : codeLineDeco).range(line.from));
       }
     }
   }

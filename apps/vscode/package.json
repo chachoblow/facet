@@ -47,6 +47,10 @@
     "@codemirror/state": "^6.6.0",
     "@codemirror/view": "^6.41.1",
     "@facet/core": "workspace:*",
-    "codemirror": "^6.0.2"
+    "@shikijs/engine-javascript": "4.0.2",
+    "@shikijs/langs": "4.0.2",
+    "@shikijs/themes": "4.0.2",
+    "codemirror": "^6.0.2",
+    "shiki": "^4.0.2"
   }
 }
