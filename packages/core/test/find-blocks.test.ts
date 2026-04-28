@@ -177,14 +177,23 @@ describe("findBlocks", () => {
     });
   });
 
-  it("emits only the outer blockquote when blockquotes are nested", () => {
+  it("emits each blockquote level when blockquotes are nested, with depth", () => {
     // > outer
     // > > nested
     const blockquotes = findBlocks(parse("> outer\n> > nested\n")).filter(
       (b) => b.type === "blockquote",
     );
-    expect(blockquotes).toHaveLength(1);
-    expect(blockquotes[0]?.start).toBe(0);
+    expect(blockquotes).toHaveLength(2);
+    expect(blockquotes[0]).toMatchObject({ type: "blockquote", depth: 1, start: 0 });
+    expect(blockquotes[1]).toMatchObject({ type: "blockquote", depth: 2 });
+    // Inner block must come after the outer in offset-sorted order, and must
+    // start somewhere on the second line (after the outer's first `>`).
+    expect(blockquotes[1].start).toBeGreaterThan(blockquotes[0].start);
+  });
+
+  it("attaches depth: 1 to a single-level blockquote", () => {
+    const bq = findBlocks(parse("> a\n> b\n")).find((b) => b.type === "blockquote");
+    expect(bq).toMatchObject({ type: "blockquote", depth: 1 });
   });
 
   it("emits an empty marker range for a setext heading", () => {

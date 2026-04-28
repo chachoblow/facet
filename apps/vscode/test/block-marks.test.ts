@@ -77,3 +77,54 @@ describe("block-marks task list checkbox widget", () => {
     expect(hasCheckboxWidget(buildDecorations(taskDoc, cursor, cursor), 0, 5)).toBe(false);
   });
 });
+
+// Doc: "> outer\n> > nested\n\nelsewhere\n"
+//   line 1: "> outer"      offsets 0-6,  newline at 7
+//   line 2: "> > nested"   offsets 8-17, newline at 18
+//   line 3: ""             offset 19 (blank)
+//   line 4: "elsewhere"    offsets 20-28
+const nestedBqDoc = Text.of(["> outer", "> > nested", "", "elsewhere", ""]);
+
+function collectHideRanges(
+  decorations: ReturnType<typeof buildDecorations>,
+): Array<{ from: number; to: number }> {
+  const out: Array<{ from: number; to: number }> = [];
+  const cur = decorations.iter();
+  while (cur.value !== null) {
+    if (cur.value.spec.widget === undefined && cur.from < cur.to) {
+      out.push({ from: cur.from, to: cur.to });
+    }
+    cur.next();
+  }
+  return out;
+}
+
+describe("block-marks nested blockquotes", () => {
+  it("hides one `>` per level when the cursor is off the blockquote", () => {
+    // Cursor on "elsewhere" line 4, offset 20 — outside both blockquotes.
+    const hides = collectHideRanges(buildDecorations(nestedBqDoc, 20, 20));
+    // Outer (depth 1) hides first `> ` on line 1 [0,2) and on line 2 [8,10).
+    // Inner (depth 2) hides second `> ` on line 2 [10,12).
+    expect(hides).toContainEqual({ from: 0, to: 2 });
+    expect(hides).toContainEqual({ from: 8, to: 10 });
+    expect(hides).toContainEqual({ from: 10, to: 12 });
+  });
+
+  it("reveals all blockquote markers when the cursor is on the inner line", () => {
+    // Cursor inside "nested" on line 2 — inside both outer and inner blocks.
+    const hides = collectHideRanges(buildDecorations(nestedBqDoc, 12, 12));
+    expect(hides.find((h) => h.from === 0 && h.to === 2)).toBeUndefined();
+    expect(hides.find((h) => h.from === 8 && h.to === 10)).toBeUndefined();
+    expect(hides.find((h) => h.from === 10 && h.to === 12)).toBeUndefined();
+  });
+
+  it("keeps the inner marker hidden when the cursor is on the outer-only line", () => {
+    // Cursor inside "outer" on line 1 — inside outer (lines 1-2), outside inner (line 2).
+    const hides = collectHideRanges(buildDecorations(nestedBqDoc, 3, 3));
+    // Outer reveals → no hides at [0,2) or [8,10).
+    expect(hides.find((h) => h.from === 0 && h.to === 2)).toBeUndefined();
+    expect(hides.find((h) => h.from === 8 && h.to === 10)).toBeUndefined();
+    // Inner still hides on line 2 → [10,12) present.
+    expect(hides).toContainEqual({ from: 10, to: 12 });
+  });
+});

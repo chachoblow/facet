@@ -9,7 +9,7 @@ export type Block =
       markerStart: number;
       markerEnd: number;
     }
-  | { type: "blockquote"; start: number; end: number }
+  | { type: "blockquote"; depth: number; start: number; end: number }
   | {
       type: "listItem";
       ordered: boolean;
@@ -23,11 +23,11 @@ export type Block =
     }
   | { type: "code"; lang: string | null; start: number; end: number };
 
-type Context = { ordered: boolean | null; insideBlockquote: boolean };
+type Context = { ordered: boolean | null; blockquoteDepth: number };
 
 export function findBlocks(root: Root): Block[] {
   const blocks: Block[] = [];
-  visit(root, blocks, { ordered: null, insideBlockquote: false });
+  visit(root, blocks, { ordered: null, blockquoteDepth: 0 });
   blocks.sort((a, b) => a.start - b.start);
   return blocks;
 }
@@ -36,8 +36,8 @@ function visit(node: Nodes, out: Block[], ctx: Context): void {
   if (node.type === "heading") {
     const block = toHeading(node);
     if (block) out.push(block);
-  } else if (node.type === "blockquote" && !ctx.insideBlockquote) {
-    const block = toBlockquote(node);
+  } else if (node.type === "blockquote") {
+    const block = toBlockquote(node, ctx.blockquoteDepth + 1);
     if (block) out.push(block);
   } else if (node.type === "code") {
     const block = toCode(node);
@@ -50,7 +50,7 @@ function visit(node: Nodes, out: Block[], ctx: Context): void {
   if ("children" in node) {
     const childCtx: Context = {
       ordered: node.type === "list" ? node.ordered === true : ctx.ordered,
-      insideBlockquote: ctx.insideBlockquote || node.type === "blockquote",
+      blockquoteDepth: node.type === "blockquote" ? ctx.blockquoteDepth + 1 : ctx.blockquoteDepth,
     };
     for (const child of node.children) visit(child, out, childCtx);
   }
@@ -74,13 +74,13 @@ function toHeading(node: Heading): Block | null {
   };
 }
 
-function toBlockquote(node: Blockquote): Block | null {
+function toBlockquote(node: Blockquote, depth: number): Block | null {
   const pos = node.position;
   if (!pos) return null;
   const start = pos.start.offset;
   const end = pos.end.offset;
   if (start === undefined || end === undefined) return null;
-  return { type: "blockquote", start, end };
+  return { type: "blockquote", depth, start, end };
 }
 
 function toCode(node: Code): Block | null {

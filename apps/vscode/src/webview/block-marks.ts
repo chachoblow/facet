@@ -56,6 +56,25 @@ const headingLineDecos = [1, 2, 3, 4, 5, 6].map((d) =>
 const blockquoteLineDeco = Decoration.line({ class: "facet-blockquote-line" });
 const listLineDeco = Decoration.line({ class: "facet-list-line" });
 
+function findBlockquoteMarkerRange(
+  text: string,
+  depth: number,
+): { from: number; to: number } | null {
+  let i = 0;
+  while (i < text.length && /\s/.test(text[i] as string)) i++;
+  // Skip the (depth - 1) shallower markers — each is `>` plus optional space.
+  for (let level = 1; level < depth; level++) {
+    if (text[i] !== ">") return null;
+    i++;
+    if (text[i] === " ") i++;
+  }
+  if (text[i] !== ">") return null;
+  const from = i;
+  i++;
+  if (text[i] === " ") i++;
+  return { from, to: i };
+}
+
 export function buildDecorations(doc: Text, selFrom: number, selTo: number): DecorationSet {
   const root = parse(doc.toString());
   const blocks = findBlocks(root);
@@ -79,12 +98,9 @@ export function buildDecorations(doc: Text, selFrom: number, selTo: number): Dec
         const line = doc.line(n);
         ranges.push(blockquoteLineDeco.range(line.from));
         if (!cursorInBlock) {
-          const match = /^(\s*)(>+\s?)/.exec(line.text);
-          if (match) {
-            const prefixOffset = match[1].length;
-            const prefixLen = match[2].length;
-            const from = line.from + prefixOffset;
-            ranges.push(hideDeco.range(from, from + prefixLen));
+          const range = findBlockquoteMarkerRange(line.text, block.depth);
+          if (range) {
+            ranges.push(hideDeco.range(line.from + range.from, line.from + range.to));
           }
         }
       }
