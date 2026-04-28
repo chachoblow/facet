@@ -19,7 +19,7 @@ This is the soul of the product. Every feature decision should be checked agains
 Facet is designed to serve three audience patterns with the same underlying Artifact:
 
 ### 1. Human ↔ AI Alignment
-Authoring agent instructions, system prompts, skill definitions, and behavior specs that AI agents read as context. The Markdown file is the contract between the human's intent and the agent's behavior.
+Authoring agent instructions, system prompts, skill definitions, and behavior specs that AI agents read as context. The Markdown file is the contract between the human's intent and the agent's behavior — and the workspace where the two build that contract together. An **Author** can ask an AI agent to edit the **Document** directly ("remove the part about async," "add this assumption"), and the agent's edits flow through the same **Surface** as a human's. AI is a first-class editing **Collaborator**, not just a downstream reader.
 
 ### 2. Cross-functional team Alignment
 Dev designs, product specs, RFCs, ADRs. The Artifact bridges Devs and PMs who think differently and historically use different tools (Devs comfortable in git, PMs comfortable in Notion/Confluence/Docs). One Artifact, two native Surfaces.
@@ -52,11 +52,15 @@ Markdown is the lingua franca underneath all three use cases:
 
 Facet bets that a great experience *on top of* markdown beats trying to invent a new format.
 
+## How it should feel
+
+Facet's surface area for an **Author** is the core blocks of markdown — headings, lists, links, code, tables, frontmatter, images, diagrams. That set is small, learnable, stable. Everything Facet layers on top of it should feel invisible: polished, clean, minimal, fast, direct. The goal is not feature density; the goal is a **Surface** that disappears so the **Document** is what an **Author** notices. When in doubt, prefer fewer affordances over more.
+
 ## What success looks like
 
 A team using Facet should experience:
 
 1. **One Artifact, no duplication.** The dev spec the team aligns on is the same file the PMs left Threads on, the same file the AI agent reads as context, the same file in the git repo.
 2. **Native Surfaces, not lowest-common-denominator UI.** Devs get a Hybrid live-preview Surface in VS Code (Facet for VS Code). PMs get clean rendered review in a browser (Facet Review). Nobody is forced into the other's tool.
-3. **Convergence as a process, not an event.** Threads, edits, and resolutions happen iteratively in the Surfaces people actually live in.
+3. **Convergence as a process, not an event.** **Threads**, edits, and resolutions happen iteratively in the **Surfaces** people actually live in. **Threads** are decision instruments, not just comment containers — and an AI agent can participate inside them as a third-party interpreter or brainstorming partner without an **Author** ever leaving the **Surface**.
 4. **The repo stays the Content source of truth.** Threads (and their Comments) live in the Collaboration source of truth — a platform/database. *Content* lives in git, where it has always belonged.
