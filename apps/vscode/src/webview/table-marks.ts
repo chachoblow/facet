@@ -36,7 +36,7 @@ export function buildTableDecorations(doc: Text, selFrom: number, selTo: number)
       ranges.push(alignmentCollapseDeco.range(table.alignmentRow.start, table.alignmentRow.end));
     }
 
-    pushCellAlignMarks(table, ranges);
+    pushCellAlignMarks(table, doc, ranges);
   }
 
   return RangeSet.of(ranges, true);
@@ -56,14 +56,23 @@ function isCursorInTable(
 
 function pushCellAlignMarks(
   table: ReturnType<typeof findTables>[number],
+  doc: Text,
   ranges: Range<Decoration>[],
 ): void {
   for (const row of table.rows) {
     for (const [colIndex, cell] of row.cells.entries()) {
       const align = table.align[colIndex];
       if (!align) continue;
-      if (cell.start === cell.end) continue;
-      ranges.push(cellAlignDecos[align].range(cell.start, cell.end));
+      let start = cell.start;
+      let end = cell.end;
+      // mdast cell ranges share boundaries at `|` separators, so the leading
+      // pipe is part of every cell's range and the trailing pipe is part of
+      // the rightmost cell's range. Trim them so text-align only governs
+      // the cell content, not the divider characters.
+      if (start < end && doc.sliceString(start, start + 1) === "|") start += 1;
+      if (start < end && doc.sliceString(end - 1, end) === "|") end -= 1;
+      if (start >= end) continue;
+      ranges.push(cellAlignDecos[align].range(start, end));
     }
   }
 }

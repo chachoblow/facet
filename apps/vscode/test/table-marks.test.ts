@@ -106,7 +106,7 @@ describe("table-marks buildTableDecorations", () => {
     expect(hasLineClass(decos, 20, "facet-table-header-line")).toBe(false);
   });
 
-  it("emits .facet-table-cell-{align} marks on each non-default-aligned cell", () => {
+  it("emits .facet-table-cell-{align} marks on each non-default-aligned cell, scoped inside the pipes", () => {
     // | L | C | R |\n| :- | :-: | -: |\n| 1 | 2 | 3 |\n
     const alignedDoc = Text.of(["| L | C | R |", "| :- | :-: | -: |", "| 1 | 2 | 3 |", ""]);
     // Cursor at end-of-doc. Doc length = 13+1+17+1+13+1 = 46
@@ -118,9 +118,16 @@ describe("table-marks buildTableDecorations", () => {
     );
     // 3 cells per row × 2 body+header rows that have content = 6 cells. (Skip the alignment row.)
     expect(marks).toHaveLength(6);
-    // Header row cells at offsets 0..4 (left), 4..8 (center), 8..13 (right)
-    const headerLeft = marks.find((m) => m.from === 0 && m.to === 4);
+    // mdast cell ranges share `|` boundaries: header row [0,4), [4,8), [8,13).
+    // Marks must EXCLUDE the leading `|` from every cell, and EXCLUDE the
+    // trailing `|` from the rightmost cell — otherwise text-align on the
+    // inline-block mark shifts the pipe character with the cell content.
+    const headerLeft = marks.find((m) => m.from === 1 && m.to === 4);
     expect(headerLeft).toBeDefined();
+    const headerCenter = marks.find((m) => m.from === 5 && m.to === 8);
+    expect(headerCenter).toBeDefined();
+    const headerRight = marks.find((m) => m.from === 9 && m.to === 12);
+    expect(headerRight).toBeDefined();
   });
 });
 
