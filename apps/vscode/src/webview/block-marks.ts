@@ -53,7 +53,11 @@ class CheckboxWidget extends WidgetType {
 const headingLineDecos = [1, 2, 3, 4, 5, 6].map((d) =>
   Decoration.line({ class: `facet-heading-line-${d}` }),
 );
-const blockquoteLineDeco = Decoration.line({ class: "facet-blockquote-line" });
+// Depth-aware so nested blockquotes read distinctly (one `>` is hidden per
+// level, so the marker count doesn't communicate depth on its own).
+const blockquoteLineDecos = [1, 2, 3, 4, 5, 6].map((d) =>
+  Decoration.line({ class: `facet-blockquote-line-${d}` }),
+);
 const listLineDeco = Decoration.line({ class: "facet-list-line" });
 
 function findBlockquoteMarkerRange(
@@ -94,14 +98,20 @@ export function buildDecorations(doc: Text, selFrom: number, selTo: number): Dec
         ranges.push(hideDeco.range(block.markerStart, block.markerEnd));
       }
     } else if (block.type === "blockquote") {
+      // Per-line reveal (Obsidian-style): only the cursor's exact line drops
+      // its decoration and reveals the source `>` markers. Sibling lines in
+      // the same blockquote stay hidden, unlike the per-block reveal pattern
+      // used for other block types.
+      const lineDeco = blockquoteLineDecos[Math.min(block.depth, 6) - 1];
+      if (!lineDeco) continue;
       for (let n = startLine.number; n <= endLine.number; n++) {
+        const cursorOnLine = selStartLine <= n && selEndLine >= n;
+        if (cursorOnLine) continue;
         const line = doc.line(n);
-        ranges.push(blockquoteLineDeco.range(line.from));
-        if (!cursorInBlock) {
-          const range = findBlockquoteMarkerRange(line.text, block.depth);
-          if (range) {
-            ranges.push(hideDeco.range(line.from + range.from, line.from + range.to));
-          }
+        ranges.push(lineDeco.range(line.from));
+        const range = findBlockquoteMarkerRange(line.text, block.depth);
+        if (range) {
+          ranges.push(hideDeco.range(line.from + range.from, line.from + range.to));
         }
       }
     } else if (block.type === "listItem") {

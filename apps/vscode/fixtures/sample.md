@@ -28,7 +28,18 @@ A scratch fixture for the F5 dev loop. Edit, save, and confirm the bytes round-t
 - [x] Already-done item — clicking should flip it back to `[ ]`.
 - Plain item next to task items.
 
+> outer
+> > inner
+> > > deep
+
 > Blockquote with `inline code`.
+>> Second
+>>> Thrid
+
+
+> outer
+> > inner
+> > > deep
 
 ```ts
 const greeting: string = "hello, facet";

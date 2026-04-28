@@ -131,11 +131,98 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
     .facet-heading-line-5 { font-size: 1em;   font-weight: 600; line-height: 1.2; }
     .facet-heading-line-6 { font-size: 1em;   font-weight: 600; line-height: 1.2; opacity: 0.8; }
 
-    .facet-blockquote-line {
-      border-left: 3px solid var(--vscode-textBlockQuote-border, var(--vscode-textLink-foreground));
+    /* Nested blockquotes render as N stacked vertical bars (Obsidian-style):
+       each depth's rule stacks alternating bar/gap inset box-shadows. Bars
+       are positioned at the same horizontal slots where the source > chars
+       sit, using ch units so they line up exactly with the monospace source
+       character grid. When the cursor moves on/off a line, the source
+       reveals/hides without shifting the content text — the bars and the
+       source markers occupy the same width.
+
+       --bq-pad matches CM's default .cm-line left padding so the bar
+       positions stay aligned with source > chars when the cursor toggles.
+
+       Selectors are prefixed with .cm-content to beat CodeMirror 6's
+       auto-generated .ͼ1 .cm-line (specificity 0,2,0). Same-specificity
+       cascade means the deepest class on the line wins, and that class's
+       rule already enumerates every bar up to its depth. */
+    .cm-content .cm-line.facet-blockquote-line-1,
+    .cm-content .cm-line.facet-blockquote-line-2,
+    .cm-content .cm-line.facet-blockquote-line-3,
+    .cm-content .cm-line.facet-blockquote-line-4,
+    .cm-content .cm-line.facet-blockquote-line-5,
+    .cm-content .cm-line.facet-blockquote-line-6 {
+      --bq-bar: var(--vscode-textBlockQuote-border, var(--vscode-textLink-foreground));
+      --bq-gap: var(--vscode-textBlockQuote-background, var(--vscode-editor-background));
+      --bq-pad: 4px;
       background: var(--vscode-textBlockQuote-background, transparent);
-      padding-left: 0.6em;
       color: var(--vscode-descriptionForeground, inherit);
+    }
+    .cm-content .cm-line.facet-blockquote-line-1 {
+      box-shadow:
+        inset var(--bq-pad) 0 0 0 var(--bq-gap),
+        inset calc(var(--bq-pad) + 3px) 0 0 0 var(--bq-bar);
+      padding-left: calc(2ch + var(--bq-pad));
+    }
+    .cm-content .cm-line.facet-blockquote-line-2 {
+      box-shadow:
+        inset var(--bq-pad) 0 0 0 var(--bq-gap),
+        inset calc(var(--bq-pad) + 3px) 0 0 0 var(--bq-bar),
+        inset calc(2ch + var(--bq-pad)) 0 0 0 var(--bq-gap),
+        inset calc(2ch + var(--bq-pad) + 3px) 0 0 0 var(--bq-bar);
+      padding-left: calc(4ch + var(--bq-pad));
+    }
+    .cm-content .cm-line.facet-blockquote-line-3 {
+      box-shadow:
+        inset var(--bq-pad) 0 0 0 var(--bq-gap),
+        inset calc(var(--bq-pad) + 3px) 0 0 0 var(--bq-bar),
+        inset calc(2ch + var(--bq-pad)) 0 0 0 var(--bq-gap),
+        inset calc(2ch + var(--bq-pad) + 3px) 0 0 0 var(--bq-bar),
+        inset calc(4ch + var(--bq-pad)) 0 0 0 var(--bq-gap),
+        inset calc(4ch + var(--bq-pad) + 3px) 0 0 0 var(--bq-bar);
+      padding-left: calc(6ch + var(--bq-pad));
+    }
+    .cm-content .cm-line.facet-blockquote-line-4 {
+      box-shadow:
+        inset var(--bq-pad) 0 0 0 var(--bq-gap),
+        inset calc(var(--bq-pad) + 3px) 0 0 0 var(--bq-bar),
+        inset calc(2ch + var(--bq-pad)) 0 0 0 var(--bq-gap),
+        inset calc(2ch + var(--bq-pad) + 3px) 0 0 0 var(--bq-bar),
+        inset calc(4ch + var(--bq-pad)) 0 0 0 var(--bq-gap),
+        inset calc(4ch + var(--bq-pad) + 3px) 0 0 0 var(--bq-bar),
+        inset calc(6ch + var(--bq-pad)) 0 0 0 var(--bq-gap),
+        inset calc(6ch + var(--bq-pad) + 3px) 0 0 0 var(--bq-bar);
+      padding-left: calc(8ch + var(--bq-pad));
+    }
+    .cm-content .cm-line.facet-blockquote-line-5 {
+      box-shadow:
+        inset var(--bq-pad) 0 0 0 var(--bq-gap),
+        inset calc(var(--bq-pad) + 3px) 0 0 0 var(--bq-bar),
+        inset calc(2ch + var(--bq-pad)) 0 0 0 var(--bq-gap),
+        inset calc(2ch + var(--bq-pad) + 3px) 0 0 0 var(--bq-bar),
+        inset calc(4ch + var(--bq-pad)) 0 0 0 var(--bq-gap),
+        inset calc(4ch + var(--bq-pad) + 3px) 0 0 0 var(--bq-bar),
+        inset calc(6ch + var(--bq-pad)) 0 0 0 var(--bq-gap),
+        inset calc(6ch + var(--bq-pad) + 3px) 0 0 0 var(--bq-bar),
+        inset calc(8ch + var(--bq-pad)) 0 0 0 var(--bq-gap),
+        inset calc(8ch + var(--bq-pad) + 3px) 0 0 0 var(--bq-bar);
+      padding-left: calc(10ch + var(--bq-pad));
+    }
+    .cm-content .cm-line.facet-blockquote-line-6 {
+      box-shadow:
+        inset var(--bq-pad) 0 0 0 var(--bq-gap),
+        inset calc(var(--bq-pad) + 3px) 0 0 0 var(--bq-bar),
+        inset calc(2ch + var(--bq-pad)) 0 0 0 var(--bq-gap),
+        inset calc(2ch + var(--bq-pad) + 3px) 0 0 0 var(--bq-bar),
+        inset calc(4ch + var(--bq-pad)) 0 0 0 var(--bq-gap),
+        inset calc(4ch + var(--bq-pad) + 3px) 0 0 0 var(--bq-bar),
+        inset calc(6ch + var(--bq-pad)) 0 0 0 var(--bq-gap),
+        inset calc(6ch + var(--bq-pad) + 3px) 0 0 0 var(--bq-bar),
+        inset calc(8ch + var(--bq-pad)) 0 0 0 var(--bq-gap),
+        inset calc(8ch + var(--bq-pad) + 3px) 0 0 0 var(--bq-bar),
+        inset calc(10ch + var(--bq-pad)) 0 0 0 var(--bq-gap),
+        inset calc(10ch + var(--bq-pad) + 3px) 0 0 0 var(--bq-bar);
+      padding-left: calc(12ch + var(--bq-pad));
     }
 
     .facet-list-line {}

@@ -110,21 +110,46 @@ describe("block-marks nested blockquotes", () => {
     expect(hides).toContainEqual({ from: 10, to: 12 });
   });
 
-  it("reveals all blockquote markers when the cursor is on the inner line", () => {
-    // Cursor inside "nested" on line 2 — inside both outer and inner blocks.
+  it("reveals only the cursor's line, keeping sibling lines in the same blockquote hidden", () => {
+    // Cursor inside "nested" on line 2 — inside both outer (lines 1-2) and
+    // inner (line 2). Per-line reveal means only line 2's hides drop; line 1
+    // still hides its outer marker.
     const hides = collectHideRanges(buildDecorations(nestedBqDoc, 12, 12));
-    expect(hides.find((h) => h.from === 0 && h.to === 2)).toBeUndefined();
+    expect(hides).toContainEqual({ from: 0, to: 2 });
     expect(hides.find((h) => h.from === 8 && h.to === 10)).toBeUndefined();
     expect(hides.find((h) => h.from === 10 && h.to === 12)).toBeUndefined();
   });
 
-  it("keeps the inner marker hidden when the cursor is on the outer-only line", () => {
-    // Cursor inside "outer" on line 1 — inside outer (lines 1-2), outside inner (line 2).
+  it("reveals only line 1 when the cursor is on the outer-only line", () => {
+    // Cursor inside "outer" on line 1. Line 1's outer marker reveals; line 2
+    // (which the cursor isn't on) keeps both its outer and inner hides.
     const hides = collectHideRanges(buildDecorations(nestedBqDoc, 3, 3));
-    // Outer reveals → no hides at [0,2) or [8,10).
     expect(hides.find((h) => h.from === 0 && h.to === 2)).toBeUndefined();
-    expect(hides.find((h) => h.from === 8 && h.to === 10)).toBeUndefined();
-    // Inner still hides on line 2 → [10,12) present.
+    expect(hides).toContainEqual({ from: 8, to: 10 });
     expect(hides).toContainEqual({ from: 10, to: 12 });
+  });
+
+  it("emits a depth-encoded line class per blockquote level", () => {
+    // Each level emits its own .facet-blockquote-line-N so the CSS can
+    // communicate depth visually — without this the same single bar shows
+    // for `> outer` and `> > nested`.
+    const decorations = buildDecorations(nestedBqDoc, 20, 20);
+    const classesAtLine = (offset: number): string[] => {
+      const out: string[] = [];
+      const cur = decorations.iter();
+      while (cur.value !== null) {
+        if (cur.from === offset && cur.to === offset && typeof cur.value.spec.class === "string") {
+          out.push(cur.value.spec.class);
+        }
+        cur.next();
+      }
+      return out;
+    };
+    // Line 1 ("> outer", offset 0) is inside the outer blockquote only.
+    expect(classesAtLine(0)).toContain("facet-blockquote-line-1");
+    expect(classesAtLine(0)).not.toContain("facet-blockquote-line-2");
+    // Line 2 ("> > nested", offset 8) is inside both outer and inner.
+    expect(classesAtLine(8)).toContain("facet-blockquote-line-1");
+    expect(classesAtLine(8)).toContain("facet-blockquote-line-2");
   });
 });
