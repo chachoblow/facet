@@ -108,7 +108,7 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'none'; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}'; style-src ${webview.cspSource} 'unsafe-inline';" />
+        content="default-src 'none'; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}' 'strict-dynamic'; style-src ${webview.cspSource} 'unsafe-inline';" />
   <style>
     html, body { height: 100%; margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -322,7 +322,7 @@ export class FacetEditorProvider implements vscode.CustomTextEditorProvider {
 </head>
 <body>
   <div id="editor"></div>
-  <script nonce="${nonce}" src="${scriptUri}"></script>
+  <script type="module" nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;
   }
