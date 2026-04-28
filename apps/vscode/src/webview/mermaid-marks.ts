@@ -73,6 +73,8 @@ export function buildMermaidDecorations(
   for (const block of blocks) {
     if (block.type !== "code" || block.lang !== "mermaid") continue;
 
+    void loadMermaid();
+
     const startLine = doc.lineAt(block.start);
     const endLine = doc.lineAt(Math.max(block.start, block.end - 1));
     const cursorInBlock = selStartLine <= endLine.number && selEndLine >= startLine.number;
