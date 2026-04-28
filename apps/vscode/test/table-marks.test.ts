@@ -84,6 +84,21 @@ describe("table-marks buildTableDecorations", () => {
     expect(hasLineClass(decos, 20, "facet-table-alignment-line")).toBe(false);
   });
 
+  it("collapses the alignment row with a block-level replace when the cursor is off the table", () => {
+    // Cursor on "end" line — alignment row should be replaced as a block.
+    const decos = buildTableDecorations(tableDoc, 31, 31);
+    const blockReplaces = collectByPredicate(decos, (_from, _to, v) => v.spec.block === true);
+    expect(blockReplaces).toHaveLength(1);
+    expect(blockReplaces[0]).toMatchObject({ from: 10, to: 19 });
+  });
+
+  it("does not block-replace the alignment row when the cursor is on any line of the table", () => {
+    // Cursor on alignment row line itself.
+    const decos = buildTableDecorations(tableDoc, 12, 12);
+    const blockReplaces = collectByPredicate(decos, (_from, _to, v) => v.spec.block === true);
+    expect(blockReplaces).toEqual([]);
+  });
+
   it("emits .facet-table-header-line on the header row only", () => {
     const decos = buildTableDecorations(tableDoc, 31, 31);
     expect(hasLineClass(decos, 0, "facet-table-header-line")).toBe(true);

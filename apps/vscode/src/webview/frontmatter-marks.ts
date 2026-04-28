@@ -40,7 +40,10 @@ export function buildFrontmatterDecorations(
     // Land cursor just after the opening `---\n` so the reveal naturally triggers.
     const innerStart = Math.min(fm.end, startLine.from + startLine.length + 1);
     ranges.push(
-      Decoration.replace({ widget: new FrontmatterWidget(innerStart) }).range(fm.start, fm.end),
+      Decoration.replace({ block: true, widget: new FrontmatterWidget(innerStart) }).range(
+        fm.start,
+        fm.end,
+      ),
     );
   }
   return RangeSet.of(ranges, true);

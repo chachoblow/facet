@@ -5,6 +5,7 @@ import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
 const tableLineDeco = Decoration.line({ class: "facet-table-line" });
 const headerLineDeco = Decoration.line({ class: "facet-table-header-line" });
 const alignmentLineDeco = Decoration.line({ class: "facet-table-alignment-line" });
+const alignmentCollapseDeco = Decoration.replace({ block: true });
 const hideDeco = Decoration.replace({});
 const cellAlignDecos: Record<"left" | "center" | "right", Decoration> = {
   left: Decoration.mark({ class: "facet-table-cell-left" }),
@@ -32,6 +33,7 @@ export function buildTableDecorations(doc: Text, selFrom: number, selTo: number)
 
     if (!cursorInTable) {
       pushPipeHides(doc, startLine.number, endLine.number, ranges);
+      ranges.push(alignmentCollapseDeco.range(table.alignmentRow.start, table.alignmentRow.end));
     }
 
     pushCellAlignMarks(table, ranges);

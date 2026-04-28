@@ -39,6 +39,14 @@ describe("frontmatter-marks buildFrontmatterDecorations", () => {
     expect(widgets[0]).toMatchObject({ from: 0, to: 16 });
   });
 
+  it("emits the widget as a block-level replace so the multi-line range collapses vertical space", () => {
+    // Cursor on body line — widget should be visible and block-level.
+    const decos = buildFrontmatterDecorations(fmDoc, 17, 17);
+    const widgets = collectByPredicate(decos, (_from, _to, v) => v.spec.widget !== undefined);
+    expect(widgets).toHaveLength(1);
+    expect(widgets[0].value.spec.block).toBe(true);
+  });
+
   it("reveals the frontmatter source when the cursor is on the opening fence line", () => {
     // Cursor at offset 0 — opening `---` line.
     const decos = buildFrontmatterDecorations(fmDoc, 0, 0);
