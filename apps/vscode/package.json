@@ -1,5 +1,5 @@
 {
-  "name": "@facet/vscode-extension",
+  "name": "facet",
   "displayName": "Facet",
   "description": "Markdown editing experience for shared alignment across humans, AI agents, and future-self.",
   "version": "0.0.0",
